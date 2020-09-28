@@ -1,6 +1,6 @@
 
 GTAG=`git describe --abbrev=4 --dirty --always --tags`
-GHASH=`git describe --always --dirty`
+GHASH=`git rev-parse HEAD`
 BUILD=`date`
 SYS=`uname`
 NIM=`nim --version | head -n 1`
