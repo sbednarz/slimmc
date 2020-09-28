@@ -44,7 +44,7 @@ Options:
 
 proc printVersionMsg() =
   echo &"""
-slimmic version {gtag} (built {build}) written by Szczepan Bednarz
+slimmc {gtag} (built {build}) written by Szczepan Bednarz
 git sha: {ghash}
 compiled on {sys} by {nimv} 
   """
