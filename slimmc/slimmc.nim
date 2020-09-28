@@ -35,6 +35,7 @@ proc printHelpMsg() =
   echo """
 Usage: slimmc [option] modelfile 
 Run kinetics simulation of radical polymerizaton.
+More into at: https://github.com/sbednarz/slimmc
 
 Options:
          -h           display this help and exit
@@ -43,7 +44,9 @@ Options:
 
 proc printVersionMsg() =
   echo &"""
-slimmc version {gtag} {ghash} (built {build}) written by Szczepan Bednarz
+slimmic version {gtag} (built {build}) written by Szczepan Bednarz
+git sha: {ghash}
+compiled on {sys} by {nimv} 
   """
 
 proc printWelcomeMsg(modelfile: string) =
