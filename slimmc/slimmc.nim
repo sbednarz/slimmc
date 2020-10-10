@@ -85,9 +85,11 @@ printWelcomeMsg(modelfile)
 loadModel(modelfile)
 
 initVariables()
-printVariables()
+if flags["listparameters"]==1:
+  printVariables()
 
 initBreakpoints()
-printBreakpoints()
+if flags["listbreakpoints"]==1:
+  printBreakpoints()
 
 runSimulation()

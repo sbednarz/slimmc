@@ -1,0 +1,5 @@
+var gtag="v1.0-2-gcf84-dirty"
+var ghash="cf847aacf5b3133c9b03db60ad2902826e46a101"
+var build="Sat, Oct 10, 2020 11:35:51 AM"
+var sys="MINGW64_NT-10.0-18362"
+var nimv="Nim Compiler Version 1.2.6 [Windows: amd64]"

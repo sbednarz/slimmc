@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import random/mersenne
+import tables
 
 # Avogadro const
 const N_A = 6.023e23
@@ -72,4 +73,11 @@ var
 
 # homopolymerization
 const monomerunit = 1
+
+var flags = initTable[string, int]()
+flags["listparameters"]=0
+flags["listbreakpoints"]=0
+flags["listinitialstate"]=0
+flags["outputeverystep"]=0
+flags["outputpercent"]=0
 

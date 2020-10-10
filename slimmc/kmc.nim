@@ -52,8 +52,8 @@ proc initSimulation() =
   nD = int(cD0*V_MC*N_A)
 
 
-proc printPostInitMsg() =
-  echo "simulation initialized"
+
+proc printInitialState() =
   echo "initial state:"
   echo "nI=", nI
   echo "nRx=", nRx
@@ -61,7 +61,15 @@ proc printPostInitMsg() =
   echo "nPx=", nPx
   echo "nD=", nD
   echo "N=", nI+nRx+nM+nPx+nD
-  echo "simulation is running..."
+
+proc printPostInitMsg() =
+  echo "simulation initialized"
+  echo "simulation time from 0 to ", breakpoints[breakpoints.len-1].time,"s, ",breakpoints.len," of breakpoints"
+  if flags["listinitialstate"]==1:
+    printInitialState()
+  echo "simulation is running ..."
+
+
 
 
 proc gotoTime(t0: float, t_step: float) =
@@ -172,24 +180,72 @@ proc runSimulation() =
   var time1 = 0.0
   var step = 0
   var nSteps = breakpoints.len
+  var timeEnd = breakpoints[breakpoints.len-1].time
 
   var realtime0 = now()
   var realtime1 = now()
   var duration = realtime1 - realtime0
+  var s = 0
+
+  var percent = 0
+  var percent_flag = 0
 
   if breakpoints[step].time == 0:
     runActions(step)
-    echo "t=", time1, "s (", step+1,"/",nSteps,")"
+    if flags["outputeverystep"]==1:
+      echo &"t={time1:.12f}s ({step+1}/{nSteps}) {duration.inSeconds()}s"
+    elif flags["outputpercent"]==1:
+      echo &"Progress/simulation time (s)/real time (s)"
 
   while true:
     inc (step)
     if step == nSteps:
       break
-
     time1 = breakpoints[step].time
     gotoTime(time0, time1)
     runActions(step)
     time0 = time1
+    
+    
+
+    if flags["outputeverystep"]==1:
+      realtime1 = now()
+      duration = realtime1 - realtime0
+      echo &"t={time1:.12f}s ({step+1}/{nSteps}) {duration.inSeconds()}s"
+    
+    elif flags["outputpercent"]==1:
+      var progress = time1/timeEnd
+      if progress > 0.9 and percent_flag==0 and percent == 8:
+        percent_flag = 1
+      elif progress > 0.8 and percent_flag==0 and percent == 7:
+        percent_flag = 1
+      elif progress > 0.7 and percent_flag==0 and percent == 6:
+        percent_flag = 1
+      elif progress > 0.6 and percent_flag==0 and percent == 5:
+        percent_flag = 1
+      elif progress > 0.5 and percent_flag==0 and percent == 4:
+        percent_flag = 1
+      elif progress > 0.4 and percent_flag==0 and percent == 3:
+        percent_flag = 1
+      elif progress > 0.3 and percent_flag==0 and percent == 2:
+        percent_flag = 1
+      elif progress > 0.2 and percent_flag==0 and percent == 1:
+        percent_flag = 1
+      elif progress > 0.1 and percent_flag==0 and percent == 0:
+        percent_flag = 1
+        
+      if percent_flag==1:
+        percent_flag = 0
+        inc percent
+        realtime1 = now()
+        duration = realtime1 - realtime0
+        s = ((int)duration.inSeconds())
+        echo &"{progress*100:.1f}%\t{time1:.12e}s\t{s}s"
+  
+  if flags["outputeverystep"]==1:
+    echo "t=", time1, "s (", step+1,"/",nSteps,")"
+  elif flags["outputpercent"]==1:
     realtime1 = now()
     duration = realtime1 - realtime0
-    echo "t=", time0, "s (", step+1,$"/",nSteps,") ", duration.inSeconds(),"s (~",duration.inHours(),"min)" 
+    s = ((int)duration.inSeconds())
+    echo &"100.0%\t{time1:.12e}s\t{s}s"
