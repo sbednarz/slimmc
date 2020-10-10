@@ -1,2 +1,2 @@
 # slimmc
-A simply and non-general use Monte Carlo simulation program of radical polymerization kinetics 
+A Monte Carlo simulation program of radical polymerization kinetics 
