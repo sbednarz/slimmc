@@ -9,6 +9,7 @@ PRG='slimmc'
 EXTRA=''
 printf "var prg=\"$PRG\"\nvar extra=\"$EXTRA\"\nvar gtag=\"$GTAG\"\nvar ghash=\"$GHASH\"\nvar build=\"$BUILD\"\nvar sys=\"$SYS\"\nvar nimv=\"$NIM\"\n" > version.nim
 nim c -d:release -o:slimmc11 slimmc.nim
+rm version.nim
 
 echo ">>> Building slimmc-turbo"
 PRG='slimmc-turbo'
