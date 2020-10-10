@@ -5,7 +5,17 @@ BUILD=`date`
 SYS=`uname`
 NIM=`nim --version | head -n 1`
 
-printf "var gtag=\"$GTAG\"\nvar ghash=\"$GHASH\"\nvar build=\"$BUILD\"\nvar sys=\"$SYS\"\nvar nimv=\"$NIM\"\n" > version.nim
+echo '>>> Building slimmc'
+PRG='slimmc'
+EXTRA=''
+printf "var prg=\"$PRG\"\nvar extra=\"$EXTRA\"\nvar gtag=\"$GTAG\"\nvar ghash=\"$GHASH\"\nvar build=\"$BUILD\"\nvar sys=\"$SYS\"\nvar nimv=\"$NIM\"\n" > version.nim
 nim c -d:release slimmc.nim
+rm version.nim
+
+echo ">>> Building slimmc-turbo"
+PRG='slimmc-turbo'
+EXTRA='*** Warning! Memory greedy version ***'
+printf "var prg=\"$PRG\"\nvar extra=\"$EXTRA\"\nvar gtag=\"$GTAG\"\nvar ghash=\"$GHASH\"\nvar build=\"$BUILD\"\nvar sys=\"$SYS\"\nvar nimv=\"$NIM\"\n" > version.nim
+nim c -d:release --gc:none -o:slimmc-turbo slimmc.nim
 rm version.nim
 

@@ -32,21 +32,24 @@ include kmc
 include version
 
 proc printHelpMsg() =
-  echo """
-Usage: slimmc [option] modelfile 
+  echo &"""
+Usage: {prg} [option] modelfile 
 Run kinetics simulation of radical polymerizaton.
 More into at: https://github.com/sbednarz/slimmc
 
 Options:
          -h           display this help and exit
          --version    output version information and exit
+
+{extra}
   """
 
 proc printVersionMsg() =
   echo &"""
-slimmc {gtag} (built {build}) written by Szczepan Bednarz
+{prg} {gtag} (built {build}) written by Szczepan Bednarz
 git sha: {ghash}
 compiled on {sys} by {nimv} 
+{extra}
   """
 
 proc printWelcomeMsg(modelfile: string) =
@@ -55,7 +58,6 @@ proc printWelcomeMsg(modelfile: string) =
 
 var modelfile = ""
 
-#errors.txt
 
 if paramCount() == 0:
   printHelpMsg()
