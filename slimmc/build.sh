@@ -1,4 +1,3 @@
-
 GTAG=`git describe --abbrev=4 --dirty --always --tags`
 GHASH=`git rev-parse HEAD`
 BUILD=`date`
