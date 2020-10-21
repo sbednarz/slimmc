@@ -141,24 +141,7 @@ proc poly(step: int, time: float) =
 
 
 
-#----- changes of concentration of species
-
-# add more A ...    
-#cA=nA*ratio
-#cB=nB*ratio
-#cC=nC*ratio
-#
-#print("old", cA, cB, cC, sumN)
-#
-#cA=0.4
-#
-#sumc = cA + cB + cC
-#ratio = sumc/N_MC
-
-# 
-#nA = np.int64(N_MC*cA/sumc)
-#nB = np.int64(N_MC*cB/sumc)
-#nC = np.int64(N_MC*cC/sumc)
+#--- dc = change concentration of species
 
 proc dc(step: int, time: float, species: string, dcval: float) =
     
@@ -168,13 +151,6 @@ proc dc(step: int, time: float, species: string, dcval: float) =
   # instantaneous concentrations
   (cI, cRx, cM, cPx, cD) = mc2conc()
 
-  #echo "nI=", nI
-  #echo "nRx=", nRx
-  #echo "nM=", nM
-  #echo "nPx=", nPx
-  #echo "nD=", nD
-  #echo "N=", nI+nRx+nM+nPx+nD
- 
   # the change of the concentration (dcval could be positive or negative val)
   case species:
     of "I":
@@ -200,7 +176,9 @@ proc dc(step: int, time: float, species: string, dcval: float) =
   #echo "nD=", nD
   #echo "N=", nI+nRx+nM+nPx+nD
 
-#----- The Runner
+
+
+#----- run actions at a brakpoint
 
 proc runActions(step: int) =
   var b = breakpoints[step]
