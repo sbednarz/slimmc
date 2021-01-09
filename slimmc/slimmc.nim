@@ -39,18 +39,15 @@ More into at: https://github.com/sbednarz/slimmc
 
 Options:
          -h           display this help and exit
-         --version    output version information and exit
-
-{extra}
-  """
+         --version    output version information and exit {extra}
+"""
 
 proc printVersionMsg() =
   echo &"""
 {prg} {gtag} (built {build}) written by Szczepan Bednarz
 git sha: {ghash}
-compiled on {sys} by {nimv} 
-{extra}
-  """
+compiled on {sys} by {nimv} {extra}
+"""
 
 proc printWelcomeMsg(modelfile: string) =
   echo "[slimmc]"
