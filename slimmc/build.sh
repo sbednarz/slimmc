@@ -13,7 +13,7 @@ rm version.nim
 
 echo ">>> Building slimmc-turbo"
 PRG='slimmc-turbo'
-EXTRA='*** Warning! Memory greedy version ***'
+EXTRA="\n*** Warning! Memory greedy version ***"
 printf "var prg=\"$PRG\"\nvar extra=\"$EXTRA\"\nvar gtag=\"$GTAG\"\nvar ghash=\"$GHASH\"\nvar build=\"$BUILD\"\nvar sys=\"$SYS\"\nvar nimv=\"$NIM\"\n" > version.nim
 nim c -d:release --gc:none -o:slimmc-turbo11 slimmc.nim
 rm version.nim
