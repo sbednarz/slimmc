@@ -46,9 +46,11 @@ proc printVersionMsg() =
   echo &"""
 {prg} {gtag} (built {build}) written by Szczepan Bednarz
 git sha: {ghash}
-compiled on {sys} by {nimv} {gcc} 
-{extra}
+compiled on {sys} by {nimv} and {gcc} 
 """
+  if extra !=''
+	  echo extra
+
 
 proc printWelcomeMsg(modelfile: string) =
   echo "[slimmc]"

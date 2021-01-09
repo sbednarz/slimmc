@@ -9,12 +9,12 @@ echo '>>> Building slimmc'
 PRG='slimmc'
 EXTRA=''
 printf "var prg=\"$PRG\"\nvar extra=\"$EXTRA\"\nvar gtag=\"$GTAG\"\nvar ghash=\"$GHASH\"\nvar build=\"$BUILD\"\nvar sys=\"$SYS\"\nvar nimv=\"$NIM\"\nvar gcc=\"$GCC\"\n" > version.nim
-nim c -d:release -o:slimmc11 slimmc.nim
+nim c -d:release -o:slimmc slimmc.nim
 rm version.nim
 
 echo ">>> Building slimmc-turbo"
 PRG='slimmc-turbo'
 EXTRA="*** Warning! Memory greedy version ***"
 printf "var prg=\"$PRG\"\nvar extra=\"$EXTRA\"\nvar gtag=\"$GTAG\"\nvar ghash=\"$GHASH\"\nvar build=\"$BUILD\"\nvar sys=\"$SYS\"\nvar nimv=\"$NIM\"\nvar gcc=\"$GCC\"\n" > version.nim
-nim c -d:release --gc:none -o:slimmc-turbo11 slimmc.nim
+nim c -d:release --gc:none -o:slimmc-turbo slimmc.nim
 rm version.nim
