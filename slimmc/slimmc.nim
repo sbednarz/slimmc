@@ -39,8 +39,12 @@ More into at: https://github.com/sbednarz/slimmc
 
 Options:
          -h           display this help and exit
-         --version    output version information and exit {extra}
-"""
+         --version    output version information and exit"""
+
+  if extra!="":
+    echo extra
+
+
 
 proc printVersionMsg() =
   echo &"""
