@@ -48,8 +48,9 @@ proc printVersionMsg() =
 git sha: {ghash}
 compiled on {sys} by {nimv} and {gcc} 
 """
-  if extra !=''
-	  echo extra
+  if extra!="":
+    echo extra
+
 
 
 proc printWelcomeMsg(modelfile: string) =
