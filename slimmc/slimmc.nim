@@ -46,7 +46,7 @@ proc printVersionMsg() =
   echo &"""
 {prg} {gtag} (built {build}) written by Szczepan Bednarz
 git sha: {ghash}
-compiled on {sys} by {nimv} {extra}
+compiled on {sys} by {nimv} {gcc} {extra}
 """
 
 proc printWelcomeMsg(modelfile: string) =
