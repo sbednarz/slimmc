@@ -80,4 +80,5 @@ flags["listbreakpoints"]=0
 flags["listinitialstate"]=0
 flags["outputeverystep"]=0
 flags["outputpercent"]=0
+flags["modelsyntaxtest"]=0
 

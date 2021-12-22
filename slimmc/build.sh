@@ -6,6 +6,8 @@
 #
 # gcc 10.1.*
 # binutils
+# git
+
 
 
 

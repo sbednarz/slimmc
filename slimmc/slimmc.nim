@@ -37,6 +37,8 @@ Run kinetics simulation of radical polymerizaton.
 More info at: https://github.com/sbednarz/slimmc
 
 Options:
+
+         -t or -test  check model file syntax, do not run simulation
          -h           display this help and exit
          --version    output version information and exit"""
 
@@ -79,6 +81,10 @@ while true:
       elif p.key == "version":
         printVersionMsg()
         quit()
+      elif p.key == "t":
+        flags["modelsyntaxtest"]=1
+      elif p.key == "test":
+        flags["modelsyntaxtest"]=1
       else:
         printHelpMsg()
         quit()
@@ -98,4 +104,5 @@ initBreakpoints()
 if flags["listbreakpoints"]==1:
   printBreakpoints()
 
-runSimulation()
+if flags["modelsyntaxtest"]==0:
+  runSimulation()
