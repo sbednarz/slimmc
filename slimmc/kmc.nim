@@ -179,6 +179,9 @@ proc runSimulation() =
   initSimulation()
   printPostInitMsg()
 
+  if flags["modelsyntaxtest"] == 1:
+    quit()
+
   var time0 = 0.0
   var time1 = 0.0
   var step = 0

@@ -104,5 +104,4 @@ initBreakpoints()
 if flags["listbreakpoints"]==1:
   printBreakpoints()
 
-if flags["modelsyntaxtest"]==0:
-  runSimulation()
+runSimulation()
