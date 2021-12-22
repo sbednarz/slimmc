@@ -1,7 +1,7 @@
 # slimmc - a simply and non-general use
 # Monte Carlo simulation program of radical polymerization kinetics
 #
-# Copyright (C) 2020 Szczepan Bednarz <sbednarz@pk.edu.p>
+# Copyright (C) 2020-2022  Szczepan Bednarz <sbednarz@pk.edu.pl>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,6 +35,9 @@ include commands
 
 proc initSimulation() =
 
+  # TODO
+  # --seed option
+  #
   # pseudorandom number generator initialization
   var seed = uint32(toUnix(getTime()))
   rng = initMersenneTwister(seed)

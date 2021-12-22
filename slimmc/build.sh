@@ -1,3 +1,14 @@
+# Prerequisites for slimmc:
+#
+# nim programming lang compiler 1.6.*
+# https://nim-lang.org/install_unix.html
+# https://nim-lang.org/install_windows.html
+#
+# gcc 10.1.*
+# binutils
+
+
+
 GTAG=`git describe --abbrev=4 --dirty --always --tags`
 GHASH=`git rev-parse HEAD`
 BUILD=`date`
