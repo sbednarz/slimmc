@@ -25,21 +25,20 @@ import times
 
 include commands
 
-# Implemented scheme of radical polymerization:
-#1  I => 2Rx f*kd
-#2  M + Rx => Px ki
-#3  Px + M => Px kp
-#4  Px + Px => D ktc
-#5  Px + Px => D + D ktd
+# Here is the implemented scheme of radical polymerization:
+#step reaction
+#1    I => 2Rx f*kd
+#2    M + Rx => Px ki
+#3    Px + M => Px kp
+#4    Px + Px => D ktc
+#5    Px + Px => D + D ktd
 
 
 proc initSimulation() =
 
-  # TODO
-  # --seed option
-  #
   # pseudorandom number generator initialization
-  var seed = uint32(toUnix(getTime()))
+  if seed == 0: 
+    seed = uint32(toUnix(getTime()))
   rng = initMersenneTwister(seed)
 
   kd_MC = kd
@@ -64,13 +63,13 @@ proc printInitialState() =
   echo "nPx=", nPx
   echo "nD=", nD
   echo "N=", nI+nRx+nM+nPx+nD
+  echo "seed=", seed
 
 proc printPostInitMsg() =
   echo "simulation initialized"
   echo "simulation time from 0 to ", breakpoints[breakpoints.len-1].time,"s, ",breakpoints.len," of breakpoints"
   if flags["listinitialstate"]==1:
     printInitialState()
-  echo "simulation is running ..."
 
 
 
@@ -181,77 +180,36 @@ proc runSimulation() =
 
   if flags["modelsyntaxtest"] == 1:
     quit()
+  
+  echo "simulation is running ..."
 
-  var time0 = 0.0
-  var time1 = 0.0
-  var step = 0
-  var nSteps = breakpoints.len
-  var timeEnd = breakpoints[breakpoints.len-1].time
+  time0 = 0.0
+  time1 = 0.0
+  step = 0
+  nSteps = breakpoints.len
+  timeEnd = breakpoints[breakpoints.len-1].time
 
-  var realtime0 = now()
-  var realtime1 = now()
-  var duration = realtime1 - realtime0
-  var s = 0
+  realtime0 = now()
+  realtime1 = now()
+  duration = realtime1 - realtime0
 
-  var percent = 0
-  var percent_flag = 0
-
+  # initial breakpoint
   if breakpoints[step].time == 0:
-    runActions(step)
-    if flags["outputeverystep"]==1:
-      echo &"t={time1:.12f}s ({step+1}/{nSteps}) {duration.inSeconds()}s"
-    elif flags["outputpercent"]==1:
-      echo &"Progress/simulation time (s)/real time (s)"
+    runCommands(step)
+    inc (step)
+
 
   while true:
-    inc (step)
+    
     if step == nSteps:
       break
+    
     time1 = breakpoints[step].time
     gotoTime(time0, time1)
-    runActions(step)
-    time0 = time1
     
-    
-
-    if flags["outputeverystep"]==1:
-      realtime1 = now()
-      duration = realtime1 - realtime0
-      echo &"t={time1:.12f}s ({step+1}/{nSteps}) {duration.inSeconds()}s"
-    
-    elif flags["outputpercent"]==1:
-      var progress = time1/timeEnd
-      if progress > 0.9 and percent_flag==0 and percent == 8:
-        percent_flag = 1
-      elif progress > 0.8 and percent_flag==0 and percent == 7:
-        percent_flag = 1
-      elif progress > 0.7 and percent_flag==0 and percent == 6:
-        percent_flag = 1
-      elif progress > 0.6 and percent_flag==0 and percent == 5:
-        percent_flag = 1
-      elif progress > 0.5 and percent_flag==0 and percent == 4:
-        percent_flag = 1
-      elif progress > 0.4 and percent_flag==0 and percent == 3:
-        percent_flag = 1
-      elif progress > 0.3 and percent_flag==0 and percent == 2:
-        percent_flag = 1
-      elif progress > 0.2 and percent_flag==0 and percent == 1:
-        percent_flag = 1
-      elif progress > 0.1 and percent_flag==0 and percent == 0:
-        percent_flag = 1
-        
-      if percent_flag==1:
-        percent_flag = 0
-        inc percent
-        realtime1 = now()
-        duration = realtime1 - realtime0
-        s = ((int)duration.inSeconds())
-        echo &"{progress*100:.1f}%\t{time1:.12e}s\t{s}s"
-  
-  if flags["outputeverystep"]==1:
-    echo "t=", time1, "s (", step+1,"/",nSteps,")"
-  elif flags["outputpercent"]==1:
     realtime1 = now()
     duration = realtime1 - realtime0
-    s = ((int)duration.inSeconds())
-    echo &"100.0%\t{time1:.12e}s\t{s}s"
+    runCommands(step)
+    time0 = time1
+    inc (step)
+    

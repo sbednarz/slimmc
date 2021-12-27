@@ -19,6 +19,8 @@
 import math
 import streams
 
+#include variables
+
 # TODO
 # stats commands (macromol memory, mcsteps ...)
 
@@ -27,6 +29,18 @@ var
   dwP: seq[float]
   hlogmD: seq[float]
   dwD: seq[float]
+
+
+# print a string or progress status
+# 
+#
+proc print (args: string) =
+  if args == "progress":
+    echo &"t={time1:.12e}s ({step+1}/{nSteps}) {duration.inSeconds()}s"
+  else:
+    echo args
+
+
 
 #----- concentration of species
 
@@ -39,25 +53,27 @@ proc mc2conc(): (float, float, float, float, float) =
   return (cI, cRx, cM, cPx, cD)
 
 
+# cmd conc => write concentrations to files
+
 proc conc(step: int, time: float) =
   
   var cI, cRx, cM, cPx, cD: float
   (cI, cRx, cM, cPx, cD) = mc2conc()
 
   var f = newFileStream("cI.txt", fmAppend)
-  f.writeLine(&"{time:.12e}\t{cI:.12e}\t{nI}")
+  f.writeLine(&"{step}\t{time:.12e}\t{cI:.12e}\t{nI}")
   f.close()
   f = newFileStream("cRx.txt", fmAppend)
-  f.writeLine(&"{time:.12e}\t{cRx:.12e}\t{nRx}")
+  f.writeLine(&"{step}\t{time:.12e}\t{cRx:.12e}\t{nRx}")
   f.close()
   f = newFileStream("cM.txt", fmAppend)
-  f.writeLine(&"{time:.12e}\t{cM:.12e}\t{nM}")
+  f.writeLine(&"{step}\t{time:.12e}\t{cM:.12e}\t{nM}")
   f.close()
   f = newFileStream("cPx.txt", fmAppend)
-  f.writeLine(&"{time:.12e}\t{cPx:.12e}\t{nPx}")
+  f.writeLine(&"{step}\t{time:.12e}\t{cPx:.12e}\t{nPx}")
   f.close()
   f = newFileStream("cD.txt", fmAppend)
-  f.writeLine(&"{time:.12e}\t{cD:.12e}\t{nD}")
+  f.writeLine(&"{step}\t{time:.12e}\t{cD:.12e}\t{nD}")
   f.close()
 
 
@@ -134,15 +150,14 @@ proc writeMacroProperties(time: float) =
   f.close()
 
 
-
+# cmd poly => mwd
 proc poly(step: int, time: float) =
   calcMacroProperties()
   writeMacroProperties(time)
 
 
 
-#--- dc = change concentration of species
-
+# cmd dc => change concentration of species
 proc dc(step: int, time: float, species: string, dcval: float) =
     
   var cI, cRx, cM, cPx, cD: float
@@ -178,21 +193,25 @@ proc dc(step: int, time: float, species: string, dcval: float) =
 
 
 
-#----- run actions at a brakpoint
+#----- run commands assigned to the breakpoint
 
-proc runActions(step: int) =
+proc runCommands(step: int) =
   var b = breakpoints[step]
   var t = b.time
-  var a = b.actions
+  var c = b.commands
   var i = 0
-  while i < a.len:
-    if a[i] == cmdconc:
+  while i < c.len:
+    if c[i] == cmdconc:
       conc(step, t)
-    elif a[i] == cmdpoly:
+    elif c[i] == cmdpoly:
       poly(step, t)
-    elif a[i] == cmddc:
-      var species = a[i+1]
-      var dcval = parseFloat(a[i+2])
+    elif c[i] == cmddc:
+      var species = c[i+1]
+      var dcval = parseFloat(c[i+2])
       dc(step, t, species, dcval)
       i = i+2
+    elif c[i] == cmdprint:
+      var args = c[i+1]
+      print(args)
+      i = i+1
     inc(i)

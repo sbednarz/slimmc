@@ -1,0 +1,27 @@
+[slimmc]
+processing model file: 03_settings.model
+simulation parameters:
+kd=0.0001 1/s
+f=0.45
+ki=0.0002 L/(mol*s)
+kp=3500.0 L/(mol*s)
+ktc=1200000.0 L/(mol*s)
+ktd=2100000.0 L/(mol*s)
+cI0=0.1 mol/L
+cM0=1.2 mol/L
+cRx0=0.0 mol/L
+cPx0=0.0 mol/L
+cD0=0.0 mol/L
+MwM=101.2 g/mol
+V_MC=5e-15 L
+seed=12345
+simulation initialized
+simulation time from 0 to 0.0s, 1 of breakpoints
+initial state:
+nI=301150000
+nRx=0
+nM=3613799999
+nPx=0
+nD=0
+N=3914949999
+seed=12345

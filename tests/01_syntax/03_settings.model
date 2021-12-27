@@ -1,0 +1,31 @@
+#an initiator decomposition
+kd=1e-4
+f=0.45
+#initiation
+ki=0.0002
+#propagation
+kp=3.5e3
+#termination
+ktc=1.2e6
+ktd=2.1e6
+#initial concentrations
+cI0=0.1
+cM0=1.2
+cRx0=0.0
+cPx0=0.0
+cD0=0.0
+#molar mass of the monomer
+MwM=101.2
+#virtual volume
+V_MC=5.0e-15
+
+#pseudorandom generator seed 
+seed=12345
+#seed=0
+
+
+
+list parameters
+list initialstate
+0:print
+

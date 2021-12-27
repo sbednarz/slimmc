@@ -18,6 +18,10 @@
 
 import random/mersenne
 import tables
+import times
+
+# random seed uint32, 0 => random
+var seed = 0'u32
 
 # Avogadro const
 const N_A = 6.023e23
@@ -45,11 +49,19 @@ var
   ktc = 0.0
   ktd = 0.0
 
+# kMC
 var
   nI, nRx, nM, nPx, nD: int
   n_mc: int
   kd_MC, ki_MC, kp_MC, ktc_MC, ktd_MC: float
   rng: MersenneTwister
+  
+  time0, time1: float
+  step, nSteps: int
+  timeEnd: float
+
+  realtime0, realtime1: DateTime
+  duration: Duration
 
 # memory usage: uint8 vs. int
 var
@@ -78,7 +90,5 @@ var flags = initTable[string, int]()
 flags["listparameters"]=0
 flags["listbreakpoints"]=0
 flags["listinitialstate"]=0
-flags["outputeverystep"]=0
-flags["outputpercent"]=0
 flags["modelsyntaxtest"]=0
 

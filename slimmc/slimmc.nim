@@ -38,9 +38,9 @@ More info at: https://github.com/sbednarz/slimmc
 
 Options:
 
-         -t or --test  check model file syntax, do not run simulation
-         -h            display this help and exit
-         --version     output version information and exit"""
+         -t, --test      check model file syntax, do not run simulation
+         -h              display this help and exit
+         --version       output version information and exit"""
 
   if extra!="":
     echo extra

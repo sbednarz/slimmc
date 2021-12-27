@@ -1,0 +1,19 @@
+[slimmc]
+processing model file: 02_default.model
+simulation parameters:
+kd=0.0 1/s
+f=0.0
+ki=0.0 L/(mol*s)
+kp=0.0 L/(mol*s)
+ktc=0.0 L/(mol*s)
+ktd=0.0 L/(mol*s)
+cI0=0.0 mol/L
+cM0=0.0 mol/L
+cRx0=0.0 mol/L
+cPx0=0.0 mol/L
+cD0=0.0 mol/L
+MwM=0.0 g/mol
+V_MC=1e-17 L
+seed=random
+simulation initialized
+simulation time from 0 to 0.0s, 1 of breakpoints

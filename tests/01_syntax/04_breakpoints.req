@@ -1,0 +1,32 @@
+[slimmc]
+processing model file: 04_breakpoints.model
+simulation parameters:
+kd=0.0 1/s
+f=0.0
+ki=0.0 L/(mol*s)
+kp=0.0 L/(mol*s)
+ktc=0.0 L/(mol*s)
+ktd=0.0 L/(mol*s)
+cI0=0.0 mol/L
+cM0=0.0 mol/L
+cRx0=0.0 mol/L
+cPx0=0.0 mol/L
+cD0=0.0 mol/L
+MwM=0.0 g/mol
+V_MC=1e-17 L
+seed=random
+breakpoints list:
+1 t=0.000000000000e+00s => print 'Just before start', conc
+2 t=1.000000000000e+02s => conc
+3 t=2.000000000000e+02s => conc, poly
+4 t=3.000000000000e+02s => conc
+5 t=4.000000000000e+02s => conc, poly
+6 t=5.000000000000e+02s => conc
+7 t=6.000000000000e+02s => conc, poly
+8 t=7.000000000000e+02s => conc
+9 t=8.000000000000e+02s => conc, poly
+10 t=9.000000000000e+02s => conc
+11 t=1.000000000000e+03s => print 't=1000s', conc, poly
+12 t=3.000000000000e+06s => print 'To run at the end of simulation, the last breakpoint', conc, poly
+simulation initialized
+simulation time from 0 to 3000000.0s, 12 of breakpoints

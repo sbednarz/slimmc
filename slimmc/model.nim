@@ -19,21 +19,24 @@
 import regex, strutils, tables, sets, algorithm
 import strformat
 
+include strings
+
 
 var data: string
 var m: RegexMatch
 
 let valid_keyword_parameters = toHashSet(["kd", "f", "ki", "kp", "ktc", "ktd",
-    "cI0", "cM0", "cRx0", "cPx0", "cD0", "V_MC", "MwM"])
+    "cI0", "cM0", "cRx0", "cPx0", "cD0", "V_MC", "MwM", "seed"])
 
 
 var parameters_list = initOrderedTable[string, string]()
-var breakpoints_list = initOrderedTable[string, seq[string]]()
+#var breakpoints_list = initOrderedTable[string, seq[string]]()
+var breakpoints_list = initOrderedTable[float, seq[string]]()
 
 type
   Breakpoint = tuple
     time: float
-    actions: seq[string]
+    commands: seq[string]
 
 var breakpoints: seq[Breakpoint]
 
@@ -41,10 +44,12 @@ var breakpoints: seq[Breakpoint]
 const cmdconc = "1"
 const cmdpoly = "2"
 const cmddc = "3"
+const cmdprint = "4"
 
 
-
-
+#
+# model file parser
+#
 proc loadModel(filename: string) =
 
   data = readFile(filename)
@@ -53,11 +58,11 @@ proc loadModel(filename: string) =
   for line in splitLines(data):
     inc i
     
-    # a comment
+    # skip a comment => "#" starts a comment line
     if match(line, re"^(\#).*", m):
       continue
 
-    # an empty line
+    # skip an empty line
     if match(line, re"^\s*$", m):
       continue
 
@@ -68,10 +73,10 @@ proc loadModel(filename: string) =
         continue
       else:
         echo "slimmc: error in model file, check ", filename, " line ", i,
-            " : parameter ", m.group(0)
+            ", parameter ", line[m.group(0)[0]]
         quit(-1)
 
-    # command arg1
+    # commands to be run before simulation starts => command arg1
     if match(line, re"\s*([a-zA-Z_0-9]+)\s+([a-zA-Z_0-9]+)", m):
       var cmd = line[m.group(0)[0]]
       var arg = line[m.group(1)[0]]
@@ -84,46 +89,43 @@ proc loadModel(filename: string) =
         elif arg=="initialstate":
           flags["listinitialstate"]=1
         else:
-          echo "slimmc: error in model file, check ", filename, " line ", i
+          echo "slimmc: error in model file, check ", filename, " line ", i, " command ",cmd, " arg ", arg
           quit(-1)
         continue
 
-      elif cmd=="output":
-        if arg=="everystep":
-          flags["outputeverystep"]=1
-        elif arg=="percent":
-          flags["outputpercent"]=1
-        else:
-          echo "slimmc: error in model file, check ", filename, " line ", i,
-              " : command ", m.group(0)
-          quit(-1)
-        continue
-      else:
-        echo "slimmc: error in model file, check ", filename, " line ", i,
-            " : parameter ", m.group(0)
-        quit(-1)
 
 
-
-    # a series of breakpoints (loop) 
+    # a series of breakpoints (loop) => start time (s) : time step (s) : number of steps : comma seperated commands
     if match(line, re"\s*([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\s*\:\s*([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\s*\:\s*([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\s*\:\s*(.*)", m):
 
-      var actions: seq[string]
+      var commands: seq[string]
       var t0 = parseFloat(line[m.group(0)[0]])
       var dt = parseFloat(line[m.group(2)[0]])
       var N = ((int)parseFloat(line[m.group(4)[0]]))
-      var actions_str = split(line[m.group(6)[0]], ",")
-      for a in actions_str:
+      var commands_str = split_cmds(line[m.group(6)[0]])
+      for a in commands_str:
         if match(a, re"^\s*(conc)\s*$"):
-          actions.add(cmdconc)
+          commands.add(cmdconc)
           continue
         if match(a, re"^\s*(poly)\s*$"):
-          actions.add(cmdpoly)
+          commands.add(cmdpoly)
           continue
         if match(a, re"^\s*(dc)\s+(I|M|Rx|Px|D)\s+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\s*$", m):
-          actions.add(cmddc)
-          actions.add(a[m.group(1)[0]])
-          actions.add(a[m.group(2)[0]])
+          commands.add(cmddc)
+          commands.add(a[m.group(1)[0]])
+          commands.add(a[m.group(2)[0]])
+          continue
+        if match(a, re"^\s*(print)\s+(progress)\s*$", m):
+          commands.add(cmdprint)
+          commands.add(a[m.group(1)[0]])
+          continue
+        if match(a, re"^\s*(print)\s*$", m):
+          commands.add(cmdprint)
+          commands.add("progress")
+          continue
+        if match(a, re"^\s*(print)\s+\'([a-zA-Z0-9_\!\?\-\+\*\,\.\%\#\;\:\=\(\)\[\]\<\>\/\\\ ]*)\'\s*$", m):
+          commands.add(cmdprint)
+          commands.add(a[m.group(1)[0]])
           continue
 
         echo "slimmc: error in model file \'", filename, "\' line ", i,
@@ -131,49 +133,60 @@ proc loadModel(filename: string) =
         quit(-1)
   
       var i = 0
-      while i < N:
+      while i < N+1:
         var time = t0 + dt*((float)i)
-        var time_str = &"{time:.12f}"
-        if breakpoints_list.hasKey(time_str):
-          breakpoints_list[time_str].add(actions)
+        if breakpoints_list.hasKey(time):
+          breakpoints_list[time].add(commands)
         else:
-          breakpoints_list[time_str]=actions
+          breakpoints_list[time]=commands
         inc i
       continue
 
 
-    # a breakpoint
+    # a breakpoint => time : comma seperated commands
     if match(line, re"\s*([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\:(.*)", m):
-      var actions: seq[string]
+      var commands: seq[string]
       var time = parseFloat(line[m.group(0)[0]])
-      var actions_str = split(line[m.group(2)[0]], ",")
-      for a in actions_str:
+      var commands_str = split_cmds(line[m.group(2)[0]])
+      for a in commands_str:
         if match(a, re"^\s*(conc)\s*$"):
-          actions.add(cmdconc)
+          commands.add(cmdconc)
           continue
         if match(a, re"^\s*(poly)\s*$"):
-          actions.add(cmdpoly)
+          commands.add(cmdpoly)
           continue
         if match(a, re"^\s*(dc)\s+(I|M|Rx|Px|D)\s+([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\s*$", m):
-          actions.add(cmddc)
-          actions.add(a[m.group(1)[0]])
-          actions.add(a[m.group(2)[0]])
+          commands.add(cmddc)
+          commands.add(a[m.group(1)[0]])
+          commands.add(a[m.group(2)[0]])
           continue
+        if match(a, re"^\s*(print)\s+(progress)\s*$", m):
+          commands.add(cmdprint)
+          commands.add(a[m.group(1)[0]])
+          continue
+        if match(a, re"^\s*(print)\s*$", m):
+          commands.add(cmdprint)
+          commands.add("progress")
+          continue
+        if match(a, re"^\s*(print)\s+\'([a-zA-Z0-9_\!\?\-\+\*\,\.\%\#\;\:\=\(\)\[\]\<\>\/\\\ ]*)\'\s*$", m):
+          commands.add(cmdprint)
+          commands.add(a[m.group(1)[0]])
+          continue
+
 
         echo "noplp"
         echo "slimmc: error in model file \'", filename, "\' line ", i,
             ": syntax error in command \'", a, "\'"
         quit(-1)
 
-      var time_str = &"{time:.12f}"
-      if breakpoints_list.hasKey(time_str):
-        breakpoints_list[time_str].add(actions)
+      if breakpoints_list.hasKey(time):
+        breakpoints_list[time].add(commands)
       else:
-        breakpoints_list[time_str]=actions
+        breakpoints_list[time]=commands
       continue
 
 
-    echo "slimmc: error in model file \'", filename, "\' line ", i
+    echo "slimmc: error in model file, check ", filename, " line ", i,": ", line
     quit(-1)
 
 
@@ -206,6 +219,8 @@ proc setVariable(variable: string, value: float) =
       V_MC = value
     of "MwM":
       MwM = value
+    of "seed":
+      seed = (uint32)value
     else:
       echo "slimc: unrecognized parameter ", variable
       quit(-1)
@@ -229,24 +244,28 @@ proc printVariables() =
   echo "cD0=", cD0, " mol/L"
   echo "MwM=", MwM, " g/mol"
   echo "V_MC=", V_MC, " L"
+  if seed == 0:
+    echo "seed=random"
+  else:
+    echo "seed=", seed
 
 
 proc initBreakpoints() =
   if breakpoints_list.len == 0:
     echo "error: breakpoint(s) must be defined, check the model file"
     quit(-1)
-  breakpoints_list.sort do (a, b: (string, seq[string])) -> int: cmp(a[0], b[0])
+  breakpoints_list.sort do (a, b: (float, seq[string])) -> int: cmp(a[0], b[0])
   for t, a in breakpoints_list.pairs:
-    breakpoints.add((time: parseFloat(t), actions: a))
+    breakpoints.add((time: t, commands: a))
 
 
 proc printBreakpoints() =
   echo "breakpoints list:"
   for i, b in breakpoints:
     var t = b.time
-    var a = b.actions
+    var a = b.commands
     var j = 0
-    var str = &"{i+1} t={t:.12f}s => "
+    var str = &"{i+1} t={t:.12e}s => "
     while j < a.len:
       if a[j] == cmdconc:
         str = str & "conc"
@@ -255,6 +274,12 @@ proc printBreakpoints() =
       elif a[j] == cmddc:
         str = str & &"dc {a[j+1]} {a[j+2]}"
         j = j+2
+      elif a[j] == cmdprint:
+        if a[j+1] == "progress":
+          str = str & &"print progress"
+        else:
+          str = str & &"print \'{a[j+1]}\'"
+        j = j+1
       if j < a.len-1:
         str = str &  ", "
       inc(j)

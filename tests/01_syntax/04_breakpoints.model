@@ -1,0 +1,23 @@
+list parameters
+list breakpoints
+
+
+# simple breakpoints
+0:print 'Just before start'
+1e3:print 't=1000s'
+
+
+#series of breakpoints
+
+0:100:10:conc
+# 0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000 (0 ... 0+10x100=1000)
+
+200:200:4:poly
+# 0, 200, 400, 600, 800, 1000 (200 ... 4x200=1000)
+
+
+
+# simple breakpoints
+3000000:print 'To run at the end of simulation, the last breakpoint', conc, poly
+# line to skip: 5000000:print 'To run at the end of simulation, the last breakpoint', conc, poly
+
