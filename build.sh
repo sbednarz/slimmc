@@ -1,6 +1,6 @@
 # Prerequisites for slimmc:
 #
-# nim programming lang compiler 1.6.*
+# nim programming lang compiler 1.4.8
 # https://nim-lang.org/install_unix.html
 # https://nim-lang.org/install_windows.html
 #
