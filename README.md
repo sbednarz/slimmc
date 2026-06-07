@@ -179,7 +179,7 @@ cPx0 = 0.0
 cD0  = 0.0
 # --- monomer molar mass and control volume ---
 MwM  = 101.2
-V_MC = 5.0e-15
+V_MC = 2.0e-17
 # --- PRNG seed (0 => seeded from the clock) ---
 seed = 12345
 
