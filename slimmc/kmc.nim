@@ -133,40 +133,40 @@ proc gotoTime(t0: float, t_step: float) =
       if nPx > 1:
         nPx = nPx - 2
         nD = nD + 1
-
-        var maxN = macroP.len
-        var i = rng.rand(maxN - 1)
+        var i = rng.rand(macroP.len - 1)
         var j = i
-        while (j == i):
-          j = rng.rand(maxN - 1)
-        chain = macroP[i] & macroP[j]
-        macroD.add(chain)
-        macroP.delete(i)
-        macroP.delete(j)
-
+        while j == i:
+          j = rng.rand(macroP.len - 1)
+        macroD.add(macroP[i] & macroP[j])        #
+        let hi = max(i, j)
+        let lo = min(i, j)
+        macroP[hi] = macroP[^1]; macroP.setLen(macroP.len - 1)
+        macroP[lo] = macroP[^1]; macroP.setLen(macroP.len - 1)
 
     # termination by disp
     elif r <= pd+pi+pp+ptc+ptd:
       if nPx > 1:
         nPx = nPx - 2
         nD = nD + 2
-
-        var maxN = macroP.len
-        var i = rng.rand(maxN - 1)
+        var i = rng.rand(macroP.len - 1)
         var j = i
-        #select 2 different macroradicals
-        while (j == i):
-          j = rng.rand(maxN - 1)
-        macroD.add(macroP[i])
+        while j == i:
+          j = rng.rand(macroP.len - 1)
+        macroD.add(macroP[i])                     #
         macroD.add(macroP[j])
-        macroP.delete(i)
-        macroP.delete(j)
+        let hi = max(i, j)
+        let lo = min(i, j)
+        macroP[hi] = macroP[^1]; macroP.setLen(macroP.len - 1)
+        macroP[lo] = macroP[^1]; macroP.setLen(macroP.len - 1)
+
+
 
 
     r = 1.0 - rng.rand(1.0)
     tau = -ln(r)/sumR
     tt = tt + tau
     n_mc = n_mc + 1
+
 
 #minimal val of tau?
 #sumR =>0 tau=>?

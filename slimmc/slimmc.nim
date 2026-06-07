@@ -100,6 +100,8 @@ initVariables()
 if flags["listparameters"]==1:
   printVariables()
 
+
+
 initBreakpoints()
 if flags["listbreakpoints"]==1:
   printBreakpoints()

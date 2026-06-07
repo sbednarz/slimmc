@@ -27,7 +27,7 @@ var data: string
 let valid_keyword_parameters = toHashSet(["kd", "f", "ki", "kp", "ktc", "ktd",
     "cI0", "cM0", "cRx0", "cPx0", "cD0", "V_MC", "MwM", "seed"])
 
-let valid_dc_species = toHashSet(["I", "M", "Rx", "Px", "D"])
+let valid_dc_species = toHashSet(["I", "M", "Rx"])
 
 
 var parameters_list = initOrderedTable[string, string]()
@@ -223,6 +223,10 @@ proc setVariable(variable: string, value: float) =
 proc initVariables() =
   for variable, value in parameters_list.pairs:
     setVariable(variable, parseFloat(value))
+  if cPx0 != 0.0 or cD0 != 0.0:
+    echo "slimmc: cPx0 and cD0 must be 0 mo/L ",
+         "(Px/D) not supported"
+    quit(-1)
 
 proc printVariables() =
   echo "simulation parameters:"

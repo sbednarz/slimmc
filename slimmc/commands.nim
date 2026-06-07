@@ -177,18 +177,13 @@ proc dc(step: int, time: float, species: string, dcval: float) =
     of "M":
       new_cM = cM + dcval
       nM = int(new_cM*V_MC*N_A)
-    of "Px":
-      new_cPx = cPx + dcval
-      nPx = int(new_cPx*V_MC*N_A)
-    of "D":
-      new_cD = cD + dcval
-      nD = int(new_cD*V_MC*N_A)
-
+    else:
+      echo "slimmc: dc not supported for species '", species, "'"
+      quit(-1)
+  
   #echo "nI=", nI
   #echo "nRx=", nRx
   #echo "nM=", nM
-  #echo "nPx=", nPx
-  #echo "nD=", nD
   #echo "N=", nI+nRx+nM+nPx+nD
 
 
