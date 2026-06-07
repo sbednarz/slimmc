@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import random/mersenne
+import std/random
 import times
 import math
 import strformat

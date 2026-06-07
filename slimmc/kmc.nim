@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import random/mersenne
+import std/random
 import times
 import math
 import strformat
@@ -39,7 +39,7 @@ proc initSimulation() =
   # pseudorandom number generator initialization
   if seed == 0: 
     seed = uint32(toUnix(getTime()))
-  rng = initMersenneTwister(seed)
+  rng = initRand(seed.int64)
 
   kd_MC = kd
   ki_MC = ki/(V_MC*N_A)
@@ -98,13 +98,13 @@ proc gotoTime(t0: float, t_step: float) =
     ptc = Rtc_MC/sumR
     ptd = Rtd_MC/sumR
 
-    r = rng.random()
+    r = rng.rand(1.0)
 
     # decomposition
     if r <= pd:
       if nI > 0:
         nI = nI - 1
-        r = rng.random()
+        r = rng.rand(1.0)
         if r <= f:
           nRx = nRx + 2
 
@@ -123,7 +123,7 @@ proc gotoTime(t0: float, t_step: float) =
       if nM > 0:
         nM = nM - 1
         var maxN = macroP.len
-        var i = (int)(rng.random()*(float)maxN)
+        var i = rng.rand(maxN - 1)
         chain = newSeq[int](1)
         chain[0] = monomerunit
         macroP[i].add(chain)
@@ -135,10 +135,10 @@ proc gotoTime(t0: float, t_step: float) =
         nD = nD + 1
 
         var maxN = macroP.len
-        var i = (int)(rng.random()*(float)maxN)
+        var i = rng.rand(maxN - 1)
         var j = i
         while (j == i):
-          j = (int)(rng.random()*(float)maxN)
+          j = rng.rand(maxN - 1)
         chain = macroP[i] & macroP[j]
         macroD.add(chain)
         macroP.delete(i)
@@ -152,18 +152,18 @@ proc gotoTime(t0: float, t_step: float) =
         nD = nD + 2
 
         var maxN = macroP.len
-        var i = (int)(rng.random()*(float)maxN)
+        var i = rng.rand(maxN - 1)
         var j = i
         #select 2 different macroradicals
         while (j == i):
-          j = (int)(rng.random()*(float)maxN)
+          j = rng.rand(maxN - 1)
         macroD.add(macroP[i])
         macroD.add(macroP[j])
         macroP.delete(i)
         macroP.delete(j)
 
 
-    r = rng.random()
+    r = 1.0 - rng.rand(1.0)
     tau = -ln(r)/sumR
     tt = tt + tau
     n_mc = n_mc + 1

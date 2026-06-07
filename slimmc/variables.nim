@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import random/mersenne
+import std/random
 import tables
 import times
 
@@ -54,7 +54,7 @@ var
   nI, nRx, nM, nPx, nD: int
   n_mc: int
   kd_MC, ki_MC, kp_MC, ktc_MC, ktd_MC: float
-  rng: MersenneTwister
+  rng: Rand 
   
   time0, time1: float
   step, nSteps: int
