@@ -191,6 +191,9 @@ Run it with:
 ```sh
 slimmc plp.model
 ``` 
+
 To see the resulting MWD:
 
+```sh
 gnuplot -e "plot 'D.1.100000000000e+00.HlogM.txt' u 1:2 w l; pause -1"
+```
