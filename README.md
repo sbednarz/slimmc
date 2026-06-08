@@ -29,7 +29,7 @@ aborts.
 
 ---
 
-## Kinetic model
+## The implemented kinetic model
 
 The parameters below describe this reaction scheme:
 
@@ -48,8 +48,6 @@ Species symbols used throughout (parameters, `dc`, output files):
 | `I`    | initiator                        |
 | `Rx`   | primary radical (R•)             |
 | `M`    | monomer                          |
-| `Px`   | macroradical / living chain (P•) |
-| `D`    | dead chain                       |
 
 ---
 
@@ -130,7 +128,7 @@ string is literal, not a separator:
 |------------------|------------------------------------------------------------------------|
 | `conc`           | write current concentrations of all species to files (see below)       |
 | `poly`           | compute and write the chain‑length / molecular‑weight distributions    |
-| `dc <S> <v>`     | change concentration of species `S` (`I`/`M`/`Rx`/`Px`/`D`) by `v` mol/L (`v` may be negative); used for semi‑batch feeding |
+| `dc <S> <v>`     | change (inc/dec) concentration of species `S` (`I`/`M`/`Rx`) by `v` mol/L (`v` may be negative); used for semi‑batch feeding |
 | `print`          | print a progress line: `t=… (step/total) elapsed‑seconds`              |
 | `print progress` | same as bare `print`                                                    |
 | `print '<text>'` | print the literal single‑quoted text                                   |
@@ -163,9 +161,9 @@ the filename (`P` = living chains, `D` = dead chains):
 `plp.model`
 
 ```text
-# M. Buback, M. Busch, R. A. L¨ammel, Macromol. Theory Simulations 1996, 5,
-845.
-# PLP experiment simulation
+# A description of a PLP experiment simulation.
+# For comparison see: M. Buback, M. Busch, R. A. L¨ammel, Modeling of molecular weight distribution in pulsed laser free-radical homopolymerizations, Macromol. Theory Simulations 1996, 5,
+845 Fig. 1.
 
 ki   = 4800
 kp   = 480
@@ -183,7 +181,7 @@ list breakpoints
 0.0:0.1:10:dc Rx 5e-7, conc, print '...*'
 1.1:dc Rx 5e-7, poly, conc
 
-0:0.01:100:print '.'
+0:0.01:100:print
 ```
 
 Run it with:
@@ -195,5 +193,5 @@ slimmc plp.model
 To see the resulting MWD:
 
 ```sh
-gnuplot -e "plot 'D.1.100000000000e+00.HlogM.txt' u 1:2 w l; pause -1"
+gnuplot -e "set xrange [3.5:6]; plot 'D.1.100000000000e+00.HlogM.txt' u 1:2 w l; pause -1"
 ```
