@@ -160,49 +160,37 @@ the filename (`P` = living chains, `D` = dead chains):
 
 ## Complete example
 
-```text
-# --- initiator decomposition ---
-kd   = 1e-4
-f    = 0.45
-# --- initiation ---
-ki   = 0.0002
-# --- propagation ---
-kp   = 3.5e3
-# --- termination ---
-ktc  = 1.2e6
-ktd  = 2.1e6
-# --- initial concentrations (mol/L) ---
-cI0  = 0.1
-cM0  = 1.2
-cRx0 = 0.0
-cPx0 = 0.0
-cD0  = 0.0
-# --- monomer molar mass and control volume ---
-MwM  = 101.2
-V_MC = 2.0e-17
-# --- PRNG seed (0 => seeded from the clock) ---
-seed = 12345
+`plp.model`
 
-# echo the parsed setup and the initial molecule counts
+```text
+# M. Buback, M. Busch, R. A. L¨ammel, Macromol. Theory Simulations 1996, 5,
+845.
+# PLP experiment simulation
+
+ki   = 4800
+kp   = 480
+ktc  = 1.25e7
+ktd  = 1.25e7
+
+cM0  = 9.4
+MwM  = 100.12
+V_MC = 5.0e-12
+
 list parameters
 list initialstate
 list breakpoints
 
-# sample concentrations every 100 s, from 0 to 1000 s
-0:100:10:conc
+0.0:0.1:10:dc Rx 5e-7, conc, print '...*'
+1.1:dc Rx 5e-7, poly, conc
 
-# sample the MWD a few times
-200:200:4:poly
-
-# semi-batch: add monomer at t = 500 s
-500:dc M 0.5
-
-# final dump at the end of the run
-3000000:print 'end of run', conc, poly
+0:0.01:100:print '.'
 ```
 
 Run it with:
 
 ```sh
-slimmc model.model
+slimmc plp.model
 ``` 
+To see the resulting MWD:
+
+gnuplot -e "plot 'D.1.100000000000e+00.HlogM.txt' u 1:2 w l; pause -1"
