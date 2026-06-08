@@ -158,31 +158,39 @@ the filename (`P` = living chains, `D` = dead chains):
 
 ## Complete example
 
-`plp.model`
+`plp.model`:
 
 ```text
 # A description of a PLP experiment simulation.
 # For comparison see: M. Buback, M. Busch, R. A. L¨ammel,
 # Modeling of molecular weight distribution in pulsed laser free-radical homopolymerizations,
-# Macromol. Theory Simulations 1996, 5,
-# 845 Fig. 1.
+# Macromol. Theory Simulations 1996, 5, 845 Fig. 1.
 
+
+# Initiation, propagation, termination rate coefficients
 ki   = 4800
 kp   = 480
 ktc  = 1.25e7
 ktd  = 1.25e7
 
+# Initial monomer conc
 cM0  = 9.4
+# Mol weight of the monomer
 MwM  = 100.12
+
+# Total volume of the simulated system
 V_MC = 5.0e-12
 
 list parameters
 list initialstate
 list breakpoints
 
+
+# PLP
 0.0:0.1:10:dc Rx 5e-7, conc, print '...*'
 1.1:dc Rx 5e-7, poly, conc
 
+# Progress info
 0:0.01:100:print
 ```
 
