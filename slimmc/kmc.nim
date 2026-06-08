@@ -30,8 +30,9 @@ include commands
 #1    I => 2Rx f*kd
 #2    M + Rx => Px ki
 #3    Px + M => Px kp
-#4    Px + Px => D ktc
-#5    Px + Px => D + D ktd
+#4    Px => Px + M kdp
+#5    Px + Px => D ktc
+#6    Px + Px => D + D ktd
 
 
 proc initSimulation() =
@@ -44,6 +45,7 @@ proc initSimulation() =
   kd_MC = kd
   ki_MC = ki/(V_MC*N_A)
   kp_MC = kp/(V_MC*N_A)
+  kdp_MC = kdp
   ktc_MC = ktc/(V_MC*N_A)
   ktd_MC = ktd/(V_MC*N_A)
 
@@ -78,8 +80,8 @@ proc gotoTime(t0: float, t_step: float) =
 
   var
     tt: float
-    Rd_MC, Ri_MC, Rp_MC, Rtc_MC, Rtd_MC: float
-    sumR, pd, pi, pp, ptc, ptd, r, tau: float
+    Rd_MC, Ri_MC, Rp_MC, Rdp_MC, Rtc_MC, Rtd_MC: float
+    sumR, pd, pi, pp, pdp, ptc, ptd, r, tau: float
 
   tt = t0
   while (tt < t_step):
@@ -87,14 +89,16 @@ proc gotoTime(t0: float, t_step: float) =
     Rd_MC = kd_MC*((float)nI) #*2?
     Ri_MC = ki_MC*((float)nRx)*((float)nM)
     Rp_MC = kp_MC*((float)nPx)*((float)nM)
+    Rdp_MC = kdp_MC*((float)nPx)
     Rtc_MC = ktc_MC*((float)nPx)*((float)nPx)
     Rtd_MC = ktd_MC*((float)nPx)*((float)nPx)
 
-    sumR = Rd_MC + Ri_MC + Rp_MC + Rtc_MC + Rtd_MC
+    sumR = Rd_MC + Ri_MC + Rp_MC + Rdp_MC + Rtc_MC + Rtd_MC
 
     pd = Rd_MC/sumR
     pi = Ri_MC/sumR
     pp = Rp_MC/sumR
+    pdp = Rdp_MC/sumR
     ptc = Rtc_MC/sumR
     ptd = Rtd_MC/sumR
 
@@ -159,6 +163,21 @@ proc gotoTime(t0: float, t_step: float) =
         macroP[hi] = macroP[^1]; macroP.setLen(macroP.len - 1)
         macroP[lo] = macroP[^1]; macroP.setLen(macroP.len - 1)
 
+    # depropagation:  Pn -> P(n-1) + M  & P1 -> Rx + M)
+    elif r <= pd+pi+pp+ptc+ptd+pdp:
+      if nPx > 0:
+        var i = rng.rand(macroP.len - 1)
+        if macroP[i].len <= 1:
+          # P1 -> Rx + M
+          nPx = nPx - 1
+          nRx = nRx + 1
+          nM  = nM + 1
+          macroP[i] = macroP[^1]          # swap-remove
+          macroP.setLen(macroP.len - 1)
+        else:
+          # Pn -> P(n-1) + M
+          macroP[i].setLen(macroP[i].len - 1)
+          nM = nM + 1
 
 
 

@@ -24,7 +24,7 @@ include strings
 
 var data: string
 
-let valid_keyword_parameters = toHashSet(["kd", "f", "ki", "kp", "ktc", "ktd",
+let valid_keyword_parameters = toHashSet(["kd", "f", "ki", "kp", "kdp", "ktc", "ktd",
     "cI0", "cM0", "cRx0", "cPx0", "cD0", "V_MC", "MwM", "seed"])
 
 let valid_dc_species = toHashSet(["I", "M", "Rx"])
@@ -196,6 +196,8 @@ proc setVariable(variable: string, value: float) =
       ki = value
     of "kp":
       kp = value
+    of "kdp":
+      kdp = value
     of "ktc":
       ktc = value
     of "ktd":
@@ -234,6 +236,7 @@ proc printVariables() =
   echo "f=", f
   echo "ki=", ki, " L/(mol*s)"
   echo "kp=", kp, " L/(mol*s)"
+  echo "kdp=", kdp, " L/(mol*s)"
   echo "ktc=", ktc, " L/(mol*s)"
   echo "ktd=", ktd, " L/(mol*s)"
   echo "cI0=", cI0, " mol/L"

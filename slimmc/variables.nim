@@ -46,6 +46,7 @@ var
   f = 0.0
   ki = 0.0
   kp = 0.0
+  kdp = 0.0
   ktc = 0.0
   ktd = 0.0
 
@@ -53,7 +54,7 @@ var
 var
   nI, nRx, nM, nPx, nD: int
   n_mc: int
-  kd_MC, ki_MC, kp_MC, ktc_MC, ktd_MC: float
+  kd_MC, ki_MC, kp_MC, kdp_MC, ktc_MC, ktd_MC: float
   rng: Rand 
   
   time0, time1: float
