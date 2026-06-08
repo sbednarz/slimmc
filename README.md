@@ -37,6 +37,7 @@ The parameters below describe this reaction scheme:
 I            ->  2 R•        kd , efficiency f      (initiator decomposition)
 R• +  M      ->    P•        ki                     (initiation)
 P• +  M      ->    P•        kp                     (propagation)
+P•           ->    P• + M    kdp                    (depropagation)
 P• +  P•     ->    D         ktc                    (termination by combination)
 P• +  P•     ->    D + D     ktd                    (termination by disproportionation)
 ```
@@ -62,6 +63,7 @@ an error. Any parameter left out keeps its default.
 | `f`    | initiator efficiency                      | —           | `0.0`     |
 | `ki`   | initiation rate constant                  | L/(mol·s)   | `0.0`     |
 | `kp`   | propagation rate constant                 | L/(mol·s)   | `0.0`     |
+| `kdp`   | depropagation rate constant                 | L/(mol·s)   | `0.0`     |
 | `ktc`  | termination by combination                | L/(mol·s)   | `0.0`     |
 | `ktd`  | termination by disproportionation         | L/(mol·s)   | `0.0`     |
 | `cI0`  | initial initiator concentration           | mol/L       | `0.0`     |
