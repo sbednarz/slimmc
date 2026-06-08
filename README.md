@@ -162,8 +162,10 @@ the filename (`P` = living chains, `D` = dead chains):
 
 ```text
 # A description of a PLP experiment simulation.
-# For comparison see: M. Buback, M. Busch, R. A. L¨ammel, Modeling of molecular weight distribution in pulsed laser free-radical homopolymerizations, Macromol. Theory Simulations 1996, 5,
-845 Fig. 1.
+# For comparison see: M. Buback, M. Busch, R. A. L¨ammel,
+# Modeling of molecular weight distribution in pulsed laser free-radical homopolymerizations,
+# Macromol. Theory Simulations 1996, 5,
+# 845 Fig. 1.
 
 ki   = 4800
 kp   = 480
