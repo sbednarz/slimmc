@@ -27,9 +27,11 @@ with `pyslimmc` in Python.
   mechanisms;
 - terminal and explicit penultimate models for copolymer propagation;
 - **programmable time- and state-dependent process changes**, including feeds,
-  temperature programs, concentration changes, **PLP/UV pulse sequences**,
-  inhibition periods, kinetic switches, and conversion-dependent changes of
-  rate constants;
+  temperature programs, concentration changes, inhibition periods, kinetic
+  switches, and conversion-dependent changes of rate constants; these controls
+  can be combined to represent experimental protocols such as **pulsed-laser
+  polymerization (PLP)**, pulsed-UV irradiation, intermittent initiation, and
+  other staged reaction programs;
 - **in-depth Python analysis** with `pyslimmc`, including distributions,
   molecular-weight moments, chain populations, copolymer composition,
   microstructure, validation, mass-balance checks, and reproducibility
