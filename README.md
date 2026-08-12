@@ -1,5 +1,9 @@
 # slimmc
 
+[![CI](https://github.com/sbednarz/slimmc/actions/workflows/ci.yml/badge.svg)](https://github.com/sbednarz/slimmc/actions/workflows/ci.yml)
+[![Release](https://github.com/sbednarz/slimmc/actions/workflows/release.yml/badge.svg)](https://github.com/sbednarz/slimmc/actions/workflows/release.yml)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-green.svg)](LICENSE)
+
 **slimmc** is a stochastic simulator (kMC) for radical polymerization that
 follows individual polymer chains as they grow, terminate, transfer, or
 depolymerize. It supports homo- and copolymerization and can provide
