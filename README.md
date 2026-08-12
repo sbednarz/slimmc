@@ -7,8 +7,16 @@ conversion, chain populations, molecular-weight distributions, copolymer
 composition, and selected microstructure information. Results can be explored
 with `pyslimmc` in Python.
 
-Current family versions: slimmc (CLI + homo/copo engines) **5.0.0**,
-pyslimmc **4.0.0**, pyslimmc-opt **1.0.0**.
+## Current releases
+
+- **slimmc 5.0.0** — native simulator binaries for Linux and Windows  
+  [Release page](https://github.com/sbednarz/slimmc/releases/tag/slimmc-v5.0.0)
+
+- **pyslimmc 4.0.0** — Python analysis package  
+  [Release page](https://github.com/sbednarz/slimmc/releases/tag/pyslimmc-v4.0.0)
+
+- **pyslimmc-opt 1.0.0** — optional optimization package  
+  [Release page](https://github.com/sbednarz/slimmc/releases/tag/pyslimmc-opt-v1.0.0)
 
 ## What slimmc does — and does not do
 
