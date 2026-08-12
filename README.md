@@ -63,7 +63,7 @@ depends on any of these features.
 
 ## A short history
 
-slimmc began as a manually written Nim homopolymer/PLP simulator and was later
+slimmc began as a **manually written Nim homopolymer/PLP simulator** and was later
 expanded into the current homo/copo family, shared storage format, and Python
 analysis stack. Subsequent development, testing, and documentation were
 conducted with extensive assistance from **OpenAI ChatGPT and Anthropic
@@ -89,6 +89,11 @@ mistakes without running the simulation, which is worth doing every time — a
 misspelled species costs you a second instead of an hour. When the model is
 valid, you run it again and the calculation starts.
 
+slimmc does not provide a graphical user interface. The simulation itself is
+defined in the model file and run from the command line. Results can then be
+inspected either with the command-line summary tool or, for more detailed
+analysis, from Python with `pyslimmc`.
+
 When the simulation finishes, the results are written to a directory. To see
 what the simulation produced, run `slimmc-summary` on that directory: it
 reports whether the run completed, the final conversion, molar-mass averages
@@ -102,6 +107,16 @@ distributions, copolymer composition and composition drift, and sequence
 statistics such as dyads and triads. You can plot the results, export them, or
 use them in your own analysis. `pyslimmc` is read-only: analysing a run cannot
 alter the stored simulation result.
+
+`pyslimmc` is a regular Python library and is not tied to a particular working
+environment. It can be used from ordinary Python scripts and the standard
+Python interpreter, [IPython](https://ipython.org/),
+[Jupyter Notebook/JupyterLab](https://jupyter.org/),
+[Marimo](https://marimo.io/),
+[Spyder](https://www.spyder-ide.org/),
+[PyCharm](https://www.jetbrains.com/pycharm/), and
+[Visual Studio Code](https://code.visualstudio.com/) (including regular `.py`
+files and `# %%` cells), as well as other environments that run Python.
 
 And if your question runs the other way round — not "what happens under these
 conditions?" but "which conditions give me the polymer I want?" —
