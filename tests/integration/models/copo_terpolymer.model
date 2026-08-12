@@ -1,0 +1,41 @@
+desc "integration terminal terpolymerization"
+param output_dir "result"
+param kmc_volume 2.0e-17
+param t_end 0.20
+param max_steps 300000
+param seed 7213
+param sequence_mode full
+
+monomer A 0.02 100.0
+monomer B 0.02 128.0
+monomer C 0.02 142.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer PC active
+polymer D dead
+
+rate ki 2.0e6
+rate kp 4.0e5
+rate kt 1.0e6
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro init R + C -> PC ki
+macro prop PA + A -> PA kp
+macro prop PA + B -> PB kp
+macro prop PA + C -> PC kp
+macro prop PB + A -> PA kp
+macro prop PB + B -> PB kp
+macro prop PB + C -> PC kp
+macro prop PC + A -> PA kp
+macro prop PC + B -> PB kp
+macro prop PC + C -> PC kp
+macro term_c PA + PA -> D kt
+macro term_c PA + PB -> D kt
+macro term_c PA + PC -> D kt
+macro term_c PB + PB -> D kt
+macro term_c PB + PC -> D kt
+macro term_c PC + PC -> D kt
+every 0.04 save
+every 0.10 save_chains
+

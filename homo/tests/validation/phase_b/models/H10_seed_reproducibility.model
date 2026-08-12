@@ -1,0 +1,14 @@
+desc "H10 validation: deterministic repeatability for a fixed seed"
+param kmc_volume 1.0e-17
+param t_end 100.0
+param max_steps 3000
+param seed 3202
+monomer M 0.0 100.0
+species A 0.010
+species B 0.0
+species C 0.0
+rate k1 const 80.0
+rate k2 const 220.0
+rxn A -> B k1
+rxn A -> C k2
+every 10.0 save

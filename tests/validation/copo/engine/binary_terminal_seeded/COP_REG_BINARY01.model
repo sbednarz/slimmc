@@ -1,0 +1,31 @@
+desc "copo seeded binary terminal validation"
+param kmc_volume 1.0e-17
+param t_end 0.5
+param max_steps 20000
+param seed 101
+param sequence_mode full
+param mass_model repeat_units
+monomer A 0.020 100.0
+monomer B 0.030 128.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer D dead
+rate ki_a 2.0e6
+rate ki_b 2.0e6
+rate kp_aa 5.0e5
+rate kp_ab 3.0e5
+rate kp_ba 4.0e5
+rate kp_bb 6.0e5
+rate ktc 1.0e6
+macro init R + A -> PA ki_a
+macro init R + B -> PB ki_b
+macro prop PA + A -> PA kp_aa
+macro prop PA + B -> PB kp_ab
+macro prop PB + A -> PA kp_ba
+macro prop PB + B -> PB kp_bb
+macro term_c PA + PA -> D ktc
+macro term_c PA + PB -> D ktc
+macro term_c PB + PB -> D ktc
+every 0.1 save
+every 0.25 save_chains

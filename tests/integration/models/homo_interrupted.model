@@ -1,0 +1,17 @@
+desc "integration interrupted run"
+param output_dir "result"
+param kmc_volume 1.0e-15
+param t_end 1.0e12
+param max_steps 2000000000
+param seed 7114
+
+monomer M 1.0 100.0
+species R 0.01
+polymer P active
+polymer D dead
+rate ki 1.0e5
+rate kp 1.0e4
+macro init R + M -> P ki
+macro prop P + M -> P kp
+every 1000 save
+

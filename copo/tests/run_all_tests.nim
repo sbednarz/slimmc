@@ -1,0 +1,38 @@
+# run_all_tests.nim
+# Build/run from repository root:
+#   nim c -r --path:src tests/run_all_tests.nim
+
+import unittest
+
+include unit/test_sequence
+include unit/test_microstructure
+include chemistry/test_init
+include chemistry/test_prop_terminal
+include chemistry/test_prop_penultimate
+include chemistry/test_terminal_penultimate_microstructure
+include chemistry/test_engine_pool_invariants_v062
+include chemistry/test_engine_regression_hardening_v063
+include chemistry/test_engine_phase_closure_v064
+include chemistry/test_block_stats_v065
+include chemistry/test_arrhenius_rates_v066
+include chemistry/test_p2_chemistry_v0612
+include chemistry/test_term_combination
+include chemistry/test_term_disproportionation
+include chemistry/test_dead_cleanup
+include chemistry/test_mass_balance_notes
+include chemistry/test_transfer_reinit
+include chemistry/test_depropagation
+include chemistry/test_depropagation_detailed
+include chemistry/test_parser_v02
+include chemistry/test_whitespace_operator_parsing
+include chemistry/test_parser_v03
+include chemistry/test_parser_v06
+
+include chemistry/test_mass_model_v05
+
+
+include chemistry/test_safe_numeric_v030
+
+include chemistry/test_phase_c
+
+include chemistry/test_phase_b

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyslimmc"
+version = "4.0.0"
+description = "Python analysis API for Slimmc simulation results"
+requires-python = ">=3.9"
+dependencies = [
+  "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+plot = [
+  "matplotlib>=3.7",
+]
+test = [
+  "pytest>=7,<10",
+  "matplotlib>=3.7",
+]
+dev = [
+  "pytest>=7,<10",
+  "matplotlib>=3.7",
+]
+
+[tool.setuptools]
+packages = ["pyslimmc"]
+
+[tool.setuptools.package-data]
+pyslimmc = ["py.typed", "*.pyi"]

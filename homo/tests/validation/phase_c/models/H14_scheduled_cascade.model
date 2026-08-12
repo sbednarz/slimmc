@@ -1,0 +1,16 @@
+desc "H14 scheduled state change triggers a complete when cascade"
+param kmc_volume 1.0e-17
+param temperature 298.15
+param t_end 0.30
+param max_steps 1000
+param seed 1402
+monomer M 0.0 100.0
+species Q 0.0
+species R 0.0
+species S 0.0
+rate k const 0.0
+rxn Q -> R k
+at 0.10 set_c Q 0.20
+when c Q > 0.15 set_c R 0.20
+when c R > 0.15 set_c S 0.20
+when c S > 0.15 print "scheduled cascade complete"

@@ -1,0 +1,27 @@
+desc "copo seeded terminal depropagation validation"
+param kmc_volume 1.0e-17
+param t_end 0.6
+param max_steps 30000
+param seed 104
+param sequence_mode full
+monomer A 0.025 100.0
+monomer B 0.025 128.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer D dead
+rate ki 2.0e6
+rate kp 5.0e5
+rate kd 20.0
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro prop PA + A -> PA kp
+macro prop PA + B -> PB kp
+macro prop PB + A -> PA kp
+macro prop PB + B -> PB kp
+macro deprop PA -> PA + A kd
+macro deprop PA -> PB + A kd
+macro deprop PB -> PA + B kd
+macro deprop PB -> PB + B kd
+every 0.1 save
+every 0.2 save_chains

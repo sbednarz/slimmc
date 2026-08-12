@@ -1,0 +1,15 @@
+desc "R004 copo zero propensity before future feed"
+param output_dir "results/main"
+param kmc_volume 1.0e-17
+param init_volume 0.10
+param t_end 2.0
+param seed 9004
+monomer A 0.00001 100
+monomer B 0.0 128
+species X 0
+polymer D dead
+feed AFEED A 0.01
+rate k const 1e6
+rxn A -> X k
+at 1.0 feed AFEED 0.01 mL
+every 0.1 save

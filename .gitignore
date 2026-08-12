@@ -1,3 +1,48 @@
-/bin/
+__pycache__/
+*.pyc
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+# Local Nim toolchain installed by setup-nim-action in GitHub Actions.
+.nim_runtime/
 nimcache/
+*/nimcache/
+*/src/nimcache/
+*/tests/nimcache/
 *.exe
+*.out
+*.dll
+*.so
+*.dylib
+*.log
+build/
+dist/
+*.egg-info/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+/bin/
+/cli/slimmc
+/cli/slimmc-debug
+/homo/slimmc
+/homo/slimmc-debug
+/copo/slimmc-copo
+/copo/slimmc-copo-debug
+/copo/slimmc_copo
+/copo/scratch/
+/copo/tests/**/actual*/
+
+# Reproducible run/report outputs
+/output/
+/tmp/
+/simulations/**/results*/
+/tests/validation/**/results*/
+/tests/validation/**/out/*
+!/tests/validation/**/out/.keep
+!/tests/validation/**/out/.gitkeep
+
+# Legacy channel-validation output location (pre file-relative output_dir fix)
+/tests/validation/copo/engine_channels/*_r[0-9][0-9][0-9]/
+# Examples: keep reference PNG files, ignore generated run storage

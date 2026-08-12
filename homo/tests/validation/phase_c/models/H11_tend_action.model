@@ -1,0 +1,12 @@
+desc "H11 action exactly at t_end executes before final snapshot"
+param kmc_volume 1.0e-17
+param temperature 298.15
+param t_end 0.30
+param max_steps 1000
+param seed 1103
+monomer M 0.0 100.0
+species Q 0.10
+species R 0.0
+rate k const 0.0
+rxn Q -> R k
+at 0.30 set_c Q 0.25

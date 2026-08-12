@@ -1,0 +1,41 @@
+# Compact end-to-end fixture for CLI -> copo -> Storage -> pyslimmc.
+desc "integration copo"
+param output_dir "result"
+param kmc_volume 2.0e-17
+param init_volume 0.050
+param temperature 343.15
+param t_end 0.60
+param max_steps 500000
+param seed 7201
+param sequence_mode full
+param mass_model repeat_units
+
+monomer A 0.030 100.0
+monomer B 0.020 128.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer D dead
+feed BFEED B 0.20
+
+rate ki_a const 2.0e6
+rate ki_b const 2.0e6
+rate kp_aa const 6.0e5
+rate kp_ab const 2.0e5
+rate kp_ba const 5.0e5
+rate kp_bb const 3.0e5
+rate ktc const 2.0e7
+macro init R + A -> PA ki_a
+macro init R + B -> PB ki_b
+macro prop PA + A -> PA kp_aa
+macro prop PA + B -> PB kp_ab
+macro prop PB + A -> PA kp_ba
+macro prop PB + B -> PB kp_bb
+macro term_c PA + PA -> D ktc
+macro term_c PA + PB -> D ktc
+macro term_c PB + PB -> D ktc
+
+at 0.20 feed BFEED 1 mL
+at 0.30 set_temp 353.15
+from 0.05 repeat 12 every 0.05 save
+from 0.10 repeat 6 every 0.10 save_chains

@@ -1,0 +1,25 @@
+desc "H17 integration: build living chains then terminate with capper"
+param kmc_volume 1.0e-17
+param t_end 0.35
+param max_steps 400000
+param seed 4171
+param mass_model repeat_units
+monomer M 0.020 100.0
+species R 2.0e-5
+species CAP 2.0e-4
+endgroup R 68.0
+endgroup CAP 40.0
+endgroup ACTIVE 0.0
+polymer P active
+polymer D dead
+rate ki const 1.0e8
+rate kp const 1.0e5
+rate ktx const 0.0
+macro init R + M -> P ki
+macro prop P + M -> P kp
+macro term_x P + CAP -> D ktx
+at 0.15 set_k ki 0.0
+at 0.15 set_k kp 0.0
+at 0.15 set_k ktx 2.0e5
+every 0.025 save
+every 0.025 save_chains

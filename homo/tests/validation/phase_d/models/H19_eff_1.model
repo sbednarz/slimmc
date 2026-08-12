@@ -1,0 +1,11 @@
+desc "H19 integration: unit efficiency"
+param kmc_volume 1.0e-17
+param t_end 100.0
+param max_steps 500
+param seed 4191
+monomer M 0.0 100.0
+species A 1.0e-3
+species B 0.0
+rate k const 100.0
+rxn A -> B k 1.0
+every 10.0 save

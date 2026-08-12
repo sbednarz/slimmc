@@ -1,0 +1,21 @@
+{"check":"required_files_present","status":"pass","severity":"error"}
+{"check":"snapshot_column_lengths","status":"pass","severity":"error"}
+{"check":"snapshot_ids_continuous","status":"pass","severity":"error"}
+{"check":"snapshot_order_nondecreasing","status":"pass","severity":"error"}
+{"check":"snapshot_finality","status":"pass","severity":"error","details":"final_count=1"}
+{"check":"state_dense_shape","status":"pass","severity":"error","details":"rows=20, expected=20"}
+{"check":"state_dense_order","status":"pass","severity":"error"}
+{"check":"state_count_unit_conversions","status":"pass","severity":"error"}
+{"check":"channel_event_dense_shape","status":"pass","severity":"error"}
+{"check":"channel_event_identities","status":"pass","severity":"error"}
+{"check":"kmc_event_equals_channel_sum","status":"pass","severity":"error"}
+{"check":"kinetic_set_ids_continuous","status":"pass","severity":"error"}
+{"check":"kinetic_parameter_sets_complete","status":"pass","severity":"error"}
+{"check":"action_ids_continuous","status":"pass","severity":"error"}
+{"check":"action_optional_masks","status":"pass","severity":"error"}
+{"check":"condition_record_ids_continuous","status":"pass","severity":"error"}
+{"check":"action_conditions_and_order","status":"pass","severity":"error"}
+{"check":"chain_record_ids_continuous","status":"pass","severity":"error"}
+{"check":"chains_valid_and_merged","status":"pass","severity":"error"}
+{"check":"moments_column_lengths","status":"pass","severity":"error"}
+{"check":"moments_six_rows_per_chain_snapshot","status":"pass","severity":"error"}

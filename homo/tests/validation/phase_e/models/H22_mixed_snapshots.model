@@ -1,0 +1,18 @@
+desc "H22 state snapshots more frequent than chain snapshots"
+param kmc_volume 1.0e-17
+param t_end 0.50
+param max_steps 500000
+param seed 2503
+param mass_model repeat_units
+monomer M 0.050 100.0
+species R 2.0e-5
+endgroup R 68.0
+endgroup ACTIVE 0.0
+polymer P active
+polymer D dead
+rate ki const 1.0e8
+rate kp const 1.0e5
+macro init R + M -> P ki
+macro prop P + M -> P kp
+every 0.10 save
+at 0.30 save_chains

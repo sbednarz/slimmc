@@ -1,0 +1,18 @@
+desc "C01 copo black-box initiation A and B"
+param kmc_volume 1.0e-17
+param t_end .06
+param max_steps 500000
+param seed 5101
+param sequence_mode full
+param mass_model repeat_units
+monomer A .020 100.0
+monomer B .020 128.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer D dead
+rate ki const 1.0e9
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+at 0.06 save
+at 0.06 save_chains

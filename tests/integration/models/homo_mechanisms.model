@@ -1,0 +1,78 @@
+# End-to-end coverage of homo chemistry, Arrhenius rates, actions, and memory policy.
+desc "integration homo mechanisms"
+param output_dir "result"
+param kmc_volume 1.0e-17
+param init_volume 0.010
+param temperature 343.15
+param t_end 0.30
+param max_steps 300000
+param when_check_events 25
+param seed 7111
+param dp_max 10000
+param sequence_mode composition
+param mass_model with_end_groups
+
+var rate kp L_mol_s
+var param temperature K
+var species CTA mol_L
+var monomer M mol_L
+var endgroup CAP g_mol
+
+monomer M 0.20 100.12
+species I 2.0e-4
+species R 1.0e-5
+species CTA 2.0e-3
+species Rcta 0.0
+species CAP 1.0e-3
+
+endgroup R 68.0
+endgroup H 1.008
+endgroup U -1.008
+endgroup ACTIVE 0.0
+endgroup M_tr 100.12
+endgroup CAP 40.0
+endgroup Rcta 0.0
+
+polymer P active
+polymer D dead
+
+feed dose M 0.10
+feed dose CTA 0.001
+
+rate kd arr 1.0e8 25000.0
+rate ki const 2.0e6
+rate kp const 2.0e5
+rate ktc const 2.0e7
+rate ktd const 2.0e7
+rate ktr const 2.0e5
+rate ktrm const 2.0e4
+rate ktx const 2.0e5
+rate kdp const 100.0
+
+rxn I -> R + R kd 0.75
+macro init R + M -> P ki
+macro prop P + M -> P kp
+macro term_c P + P -> D ktc
+macro term_d P + P -> D + D ktd
+macro term_x P + CAP -> D ktx
+macro transfer P + CTA -> D + Rcta ktr
+macro init Rcta + M -> P ki
+macro transfer_m P + M -> D + P ktrm
+macro deprop P -> P + M kdp
+
+memory_limit 2GB
+at_memory 1GB save stop
+
+at 0.00 print "integration start"
+at 0.00 print_info
+at 0.00 print_memory
+at 0.04 set_k kp 210000
+at 0.05 add_k kp 10000
+at 0.06 set_temp 348.15
+at 0.07 add_temp 5.0
+at 0.08 add_c CTA 0.0001
+at 0.09 set_c CAP 0.0008
+at 0.10 feed dose 0.10 mL
+from 0.03 step 0.03 save
+from 0.06 repeat 4 every 0.06 save_chains
+when X M > -0.1 and c M < 1.0 print "condition fired"

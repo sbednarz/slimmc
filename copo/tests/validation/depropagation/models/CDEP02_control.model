@@ -1,0 +1,33 @@
+desc "CDEP02 matched control with depropagation disabled"
+param kmc_volume 1.0e-17
+param t_end 0.18
+param max_steps 2000000
+param seed 4301
+param sequence_mode full
+param mass_model repeat_units
+monomer A 0.040 100.0
+monomer B 0.040 128.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer D dead
+rate ki const 1.0e8
+rate kp const 3.0e5
+rate kd const 0.0
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro prop PA + A -> PA kp
+macro prop PA + B -> PB kp
+macro prop PB + A -> PA kp
+macro prop PB + B -> PB kp
+macro deprop PA -> PA + A kd
+macro deprop PA -> PB + A kd
+macro deprop PB -> PA + B kd
+macro deprop PB -> PB + B kd
+at 0.10 set_k ki 0.0
+at 0.10 set_k kp 0.0
+at 0.10 set_k kd 0.0
+at 0.10 save
+at 0.10 save_chains
+every 0.02 save
+at 0.18 save_chains

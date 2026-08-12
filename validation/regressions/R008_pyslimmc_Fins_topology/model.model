@@ -1,0 +1,26 @@
+desc "R008 F.ins uses topology not rate names"
+param kmc_volume 1.0e-17
+param t_end 0.1
+param max_steps 200000
+param seed 8008
+monomer A 0.04 100
+monomer B 0.04 120
+species R 2e-5
+polymer PA active
+polymer PB active
+polymer D dead
+rate begin_A const 1e9
+rate begin_B const 1e9
+rate alpha const 8e5
+rate beta const 2e5
+rate gamma const 5e5
+rate delta const 5e5
+macro init R + A -> PA begin_A
+macro init R + B -> PB begin_B
+macro prop PA + A -> PA alpha
+macro prop PA + B -> PB beta
+macro prop PB + A -> PA gamma
+macro prop PB + B -> PB delta
+every 0.02 save
+at 0.1 save_chains
+param output_dir "results/main"

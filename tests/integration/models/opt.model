@@ -1,0 +1,23 @@
+# Real but inexpensive pyslimmc-opt fixture.
+desc "integration optimization"
+param output_dir "result"
+param kmc_volume 1.0e-17
+param temperature 343.15
+param t_end 0.20
+param max_steps 250000
+param seed 7301
+param mass_model repeat_units
+var param t_end s
+
+monomer M 0.030 100.0
+species R 1.0e-5
+polymer P active
+polymer D dead
+rate ki const 2.0e6
+rate kp const 1.0e5
+rate ktd const 1.0e7
+macro init R + M -> P ki
+macro prop P + M -> P kp
+macro term_d P + P -> D + D ktd
+every 0.05 save
+every 0.10 save_chains

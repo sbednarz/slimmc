@@ -1,0 +1,37 @@
+desc "copo seeded terpoly terminal validation"
+param kmc_volume 1.0e-17
+param t_end 0.4
+param max_steps 20000
+param seed 102
+param sequence_mode composition
+monomer A 0.015 100.0
+monomer B 0.020 128.0
+monomer C 0.010 142.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer PC active
+polymer D dead
+rate ki 2.0e6
+rate kp 4.0e5
+rate ktc 8.0e5
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro init R + C -> PC ki
+macro prop PA + A -> PA kp
+macro prop PA + B -> PB kp
+macro prop PA + C -> PC kp
+macro prop PB + A -> PA kp
+macro prop PB + B -> PB kp
+macro prop PB + C -> PC kp
+macro prop PC + A -> PA kp
+macro prop PC + B -> PB kp
+macro prop PC + C -> PC kp
+macro term_c PA + PA -> D ktc
+macro term_c PA + PB -> D ktc
+macro term_c PA + PC -> D ktc
+macro term_c PB + PB -> D ktc
+macro term_c PB + PC -> D ktc
+macro term_c PC + PC -> D ktc
+every 0.1 save
+every 0.2 save_chains

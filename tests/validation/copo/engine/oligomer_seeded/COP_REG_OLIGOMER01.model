@@ -1,0 +1,27 @@
+desc "copo seeded oligomer validation"
+param kmc_volume 1.0e-17
+param t_end 0.25
+param max_steps 10000
+param seed 105
+param sequence_mode composition
+param dp_max 12
+monomer A 0.010 100.0
+monomer B 0.010 128.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer D dead
+rate ki 2.0e6
+rate kp 3.0e5
+rate ktc 1.0e6
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro prop PA + A -> PA kp
+macro prop PA + B -> PB kp
+macro prop PB + A -> PA kp
+macro prop PB + B -> PB kp
+macro term_c PA + PA -> D ktc
+macro term_c PA + PB -> D ktc
+macro term_c PB + PB -> D ktc
+every 0.05 save
+every 0.125 save_chains

@@ -1,0 +1,11 @@
+desc "H18 integration: two A to C bimolecular same-species reaction"
+param kmc_volume 1.0e-17
+param t_end 1.0
+param max_steps 100000
+param seed 4183
+monomer M 0.0 100.0
+species A 1.0e-3
+species C 0.0
+rate k const 1.0e8
+rxn 2 A -> C k
+every 0.1 save

@@ -1,0 +1,18 @@
+desc "integration failed run"
+param output_dir "result"
+param kmc_volume 1.0e-17
+param t_end 1.0
+param max_steps 100000
+param seed 7113
+
+monomer M 0.10 100.0
+species I 0.01
+species R 0.0
+polymer P active
+polymer D dead
+rate kd 1.0e308
+rate ki 1.0e6
+rxn I -> R + R kd
+macro init R + M -> P ki
+every 0.1 save
+

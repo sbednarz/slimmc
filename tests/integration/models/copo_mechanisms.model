@@ -1,0 +1,83 @@
+# End-to-end coverage of copo reaction mechanisms and mutable actions.
+desc "integration copo mechanisms"
+param output_dir "result"
+param kmc_volume 2.0e-17
+param init_volume 0.010
+param temperature 343.15
+param t_end 0.30
+param max_steps 400000
+param when_check_events 25
+param seed 7211
+param sequence_mode full
+param dp_max 10000
+param mass_model with_end_groups
+
+monomer A 0.10 100.0
+monomer B 0.10 128.0
+species I 2.0e-4
+species R 1.0e-5
+species CTA 2.0e-3
+species Rcta 0.0
+species CAP 1.0e-3
+
+endgroup R 68.0
+endgroup H 1.0
+endgroup U 0.0
+endgroup ACTIVE 0.0
+endgroup A_tr 100.0
+endgroup B_tr 128.0
+endgroup CAP 40.0
+endgroup Rcta 0.0
+endgroup CTA 0.0
+
+polymer PA active
+polymer PB active
+polymer D dead
+
+feed dose A 0.05
+feed dose B 0.05
+
+rate kd arr 1.0e8 25000.0
+rate ki 2.0e6
+rate kp_aa 2.0e5
+rate kp_ab 2.0e5
+rate kp_ba 2.0e5
+rate kp_bb 2.0e5
+rate ktc 1.0e7
+rate ktd 1.0e7
+rate ktx 1.0e5
+rate ktr 1.0e5
+rate ktrm 1.0e4
+rate kdep 50.0
+
+rxn I -> R + R kd 0.75
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro prop PA + A -> PA kp_aa
+macro prop PA + B -> PB kp_ab
+macro prop PB + A -> PA kp_ba
+macro prop PB + B -> PB kp_bb
+macro term_c PA + PB -> D ktc
+macro term_d PA + PB -> D + D ktd
+macro term_x PA + CAP -> D ktx
+macro transfer PA + CTA -> D + Rcta ktr
+macro init Rcta + A -> PA ki
+macro transfer_m PA + A -> D + PA ktrm
+macro deprop PA -> PB + A kdep
+
+memory_limit 2GB
+at_memory 1GB save stop
+
+at 0.00 print "integration start"
+at 0.00 print_info
+at 0.00 print_memory
+at 0.04 set_k kp_aa 210000
+at 0.05 add_k kp_aa 10000
+at 0.06 set_temp 348.15
+at 0.07 add_temp 5.0
+at 0.08 add_c CTA 0.0001
+at 0.09 set_c CAP 0.0008
+at 0.10 feed dose 0.10 mL
+from 0.03 step 0.03 save
+from 0.06 repeat 4 every 0.06 save_chains
+when X A > -0.1 and X B > -0.1 and c A < 1.0 print "condition fired"

@@ -1,0 +1,10 @@
+desc "R001 homo termination t_end"
+param output_dir "results/main"
+param kmc_volume 1.0e-17
+param t_end 0.1
+param seed 9001
+species A 0.01
+species B 0
+rate k const 10
+rxn A -> B k
+every 0.02 save

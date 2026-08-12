@@ -1,0 +1,106 @@
+from pathlib import Path
+from typing import Any, Mapping, Literal
+import numpy as np
+from .run import Run
+from .summary import RunSummary
+from .spectra import MolarMassDistribution, ChainLengthDistribution, ChainMassSpectrum
+
+class StorageChains:
+    n_records: int
+    n_chains: int
+    dp: np.ndarray
+    count: np.ndarray
+    composition: Any
+    component_count: np.ndarray
+    def where_count(self, monomer: str, *, min: int | None = ..., max: int | None = ...) -> "StorageChains": ...
+    def where_fraction(self, monomer: str, *, min: float | None = ..., max: float | None = ...) -> "StorageChains": ...
+    def where_component_count(self, *, min: int | None = ..., max: int | None = ...) -> "StorageChains": ...
+    def where_components(self, components: Any, *, exact: bool = ...) -> "StorageChains": ...
+    def composition_by_dp(self, *, bins: Any = ...) -> Any: ...
+    def composition_dp_map(self, monomer: str, *, dp_bins: Any = ..., fraction_bins: Any = ...) -> Any: ...
+    def composition_mass_map(self, monomer: str, *, mass_model: str = ..., mass_bins: Any = ..., fraction_bins: Any = ...) -> Any: ...
+    def composition_map(self, x: str, y: str, *, bins: Any = ...) -> Any: ...
+    def component_classes(self) -> Any: ...
+    def dyads_by_dp(self, *, bins: Any = ...) -> Any: ...
+    def triads_by_composition(self, monomer: str, *, bins: Any = ...) -> Any: ...
+    def block_count(self, monomer: str | None = ..., *, progress: Any = ...) -> np.ndarray: ...
+    def junction_positions(self, left: str, right: str) -> tuple[tuple[int, ...], ...]: ...
+    def junction_position(self, left: str, right: str) -> np.ndarray: ...
+
+class StorageSnapshot:
+    snapshot_id: int
+    t: float
+    event: int
+    sid: int
+    state: Any
+    kmc_volume: float
+    volume: float
+    moles: Mapping[str, float]
+    chains: StorageChains
+    moments: Any
+    channels: Any
+    firings: Any
+    copolymerization: Any
+    kinetics: Any
+    def mwd(self, **kwargs: Any) -> MolarMassDistribution: ...
+    def cld(self, **kwargs: Any) -> ChainLengthDistribution: ...
+    def chain_mass_spectrum(self, **kwargs: Any) -> ChainMassSpectrum: ...
+    def info(self) -> str: ...
+
+class StorageRun(Run):
+    path: Path
+    t: np.ndarray
+    event: np.ndarray
+    sid: np.ndarray
+    kmc_volume: np.ndarray
+    volume: np.ndarray
+    c0: Mapping[str, float]
+    count0: Mapping[str, int]
+    moles0: Mapping[str, float]
+    feeds: Any
+    feed_events: Any
+    balance: Any
+    snapshots: Any
+    first: StorageSnapshot
+    last: StorageSnapshot
+    final: StorageSnapshot
+    snapshots_with_chains: tuple[StorageSnapshot, ...]
+    first_with_chains: StorageSnapshot
+    last_with_chains: StorageSnapshot
+    state: Any
+    chains: StorageChains
+    moments: Any
+    channels: Any
+    firings: Any
+    copolymerization: Any
+    microstructure: Any
+    kinetics: Any
+    actions: Any
+    diagnostics: Any
+    raw: Any
+    output_status: Any
+    validation: Any
+    monomers: Mapping[str, Mapping[str, Any]]
+    endgroups: Mapping[str, Mapping[str, Any]]
+    chain_count: Any
+    plot: Any
+    conv: Any
+    conc: Any
+    moles: Any
+    k: Any
+    F: Any
+    temp: np.ndarray
+    def at_snapshot(self, snapshot_id: int) -> StorageSnapshot: ...
+    def at_time(self, time: float, *, method: str = ...) -> StorageSnapshot: ...
+    def at_event(self, event: int, *, method: str = ...) -> StorageSnapshot: ...
+    def at_conversion(self, conversion: float, *, monomer: str | None = ..., method: str = ...) -> StorageSnapshot: ...
+    def at_temperature(self, temperature: float) -> tuple[StorageSnapshot, ...]: ...
+    def mwd(self, *, snapshot: Any = ..., **kwargs: Any) -> MolarMassDistribution: ...
+    def cld(self, *, snapshot: Any = ..., **kwargs: Any) -> ChainLengthDistribution: ...
+    def chain_mass_spectrum(self, *, snapshot: Any = ..., **kwargs: Any) -> ChainMassSpectrum: ...
+    def validate(self, *, strict: bool = ...) -> Any: ...
+    def refresh(self) -> "StorageRun": ...
+    def mass_audit(self, *, tolerance: float = ..., snapshot: Any = ..., mass_model: str | None = ...) -> Any: ...
+    def chain_counts(self, *, snapshot: Any = ..., pool: Any = ..., grouping: str = ...) -> Any: ...
+    def summary(self, path: str | Path | None = ...) -> RunSummary: ...
+    def info(self) -> str: ...

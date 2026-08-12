@@ -1,0 +1,5 @@
+# Core pyslimmc dependency
+numpy>=1.24
+
+# Plotting/PDF reports are optional; install with:
+#   python -m pip install ".[plot]"

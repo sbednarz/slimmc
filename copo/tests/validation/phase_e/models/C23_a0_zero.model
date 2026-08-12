@@ -1,0 +1,17 @@
+desc "C23 copo clean completion when total propensity is zero"
+param kmc_volume 1.0e-17
+param t_end 1.0
+param max_steps 1000
+param seed 3505
+param sequence_mode full
+param mass_model repeat_units
+monomer A 0.010 100.0
+monomer B 0.010 128.0
+species R 0.0
+polymer PA active
+polymer PB active
+polymer D dead
+rate ki 1.0e8
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+every 0.25 save

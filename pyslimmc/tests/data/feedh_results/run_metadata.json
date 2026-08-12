@@ -1,0 +1,319 @@
+{
+  "run_id": "feedh",
+  "input_model_file": "input.model",
+  "source_model_name": "feedh.model",
+  "input_model_sha256": "739aa339a108fa34a8dafae2f46be2b65173963a5ca14f367239612132d36bfd",
+  "storage": "slimmc-storage",
+  "storage_format_version": "1.2.0",
+  "schema_sha256": "32edffebb888e8092f96c5d3d28f3467f8bc989da8d41b0f4e42cf110d4c6039",
+  "seed": "1301",
+  "engine": "slimmc",
+  "cli_version": "v4.1.1",
+  "engine_version": "v4.1.1",
+  "started_at_utc": "2026-08-04T05:24:56Z",
+  "finished_at_utc": "2026-08-04T05:24:56Z",
+  "wall_time_s": 0.13444733619689941,
+  "run_status": "completed",
+  "termination_reason": "t_end",
+  "exit_code": 0,
+  "kmc_volume_L": 1e-18,
+  "initial_kmc_volume_L": 1e-18,
+  "current_kmc_volume_L": 1.01e-18,
+  "initial_volume_mL": 100.0,
+  "current_volume_mL": 101.0,
+  "volume_mode": "variable",
+  "avogadro_constant_mol_inv": 6.02214076e+23,
+  "initial_temperature_K": 298.15,
+  "kinetic_model": "homo",
+  "n_monomers": 1,
+  "dp_max": "2147483647",
+  "sequence_mode": "composition",
+  "engine_chain_dp_dtype": "int",
+  "engine_chain_dp_max": "9223372036854775807",
+  "platform": "linux-amd64",
+  "threads": 1,
+  "compiler": "Nim 2.2.10",
+  "build_mode": "release",
+  "binary_name": "slimmc",
+  "binary_hash_algorithm": "sha256",
+  "binary_hash": "bf24e93a4c97e65aa34027ed94cf18d6176ca6f9dc8397cde91cfcdf867980b2",
+  "git_dirty": null,
+  "execution": {
+    "engine": "slimmc",
+    "engine_version": "v4.1.1",
+    "cli_version": "v4.1.1",
+    "started_at_utc": "2026-08-04T05:24:56Z",
+    "status": "completed",
+    "exit_code": 0,
+    "platform": "linux-amd64",
+    "threads": 1,
+    "compiler": "Nim 2.2.10",
+    "build_mode": "release",
+    "finished_at_utc": "2026-08-04T05:24:56Z",
+    "wall_time_s": 0.13444733619689941,
+    "binary_name": "slimmc",
+    "binary_hash_algorithm": "sha256",
+    "binary_hash": "bf24e93a4c97e65aa34027ed94cf18d6176ca6f9dc8397cde91cfcdf867980b2",
+    "git_dirty": null
+  },
+  "validation_status": "passed",
+  "validation_warning_count": 0,
+  "validation_error_count": 0,
+  "channel_trace_enabled": false,
+  "channel_trace_complete": true,
+  "channel_trace_rows": 0,
+  "channel_trace_truncated": false,
+  "variables": [],
+  "model": {
+    "schema": "slimmc-resolved-model-v1",
+    "kinetic_model": "homo",
+    "desc": "Semibatch pyslimmc API fixture",
+    "parameters": {
+      "kmc_volume_L": 1e-18,
+      "init_volume_mL": 100.0,
+      "initial_temperature_K": 298.15,
+      "t_end_s": 0.4,
+      "max_events": 1000,
+      "when_check_events": 1,
+      "seed": 1301,
+      "dp_max": 2147483647,
+      "sequence_mode": "composition",
+      "mass_model": "repeat_units"
+    },
+    "memory_policy": {
+      "has_limit": false,
+      "limit_bytes": 0,
+      "save_on_limit": false,
+      "stop_on_limit": false
+    },
+    "monomers": [
+      {
+        "name": "M",
+        "initial_concentration_mol_L": 0.1,
+        "molar_mass_g_mol": 100.0
+      }
+    ],
+    "species": [
+      {
+        "name": "Q",
+        "initial_concentration_mol_L": 0.1,
+        "molar_mass_g_mol": null
+      },
+      {
+        "name": "R",
+        "initial_concentration_mol_L": 0.0,
+        "molar_mass_g_mol": null
+      }
+    ],
+    "feeds": [
+      {
+        "name": "F",
+        "components": [
+          {
+            "name": "M",
+            "concentration_mol_L": 1.0
+          },
+          {
+            "name": "Q",
+            "concentration_mol_L": 0.2
+          }
+        ]
+      }
+    ],
+    "polymers": [],
+    "endgroups": [
+      {
+        "name": "H",
+        "mass_known": true,
+        "molar_mass_g_mol": 1.008,
+        "source": "builtin",
+        "builtin": true
+      },
+      {
+        "name": "U",
+        "mass_known": true,
+        "molar_mass_g_mol": -1.008,
+        "source": "builtin",
+        "builtin": true
+      },
+      {
+        "name": "ACTIVE",
+        "mass_known": true,
+        "molar_mass_g_mol": 0.0,
+        "source": "builtin",
+        "builtin": true
+      }
+    ],
+    "rates": [
+      {
+        "name": "k",
+        "kind": "constant",
+        "value": 0.0
+      }
+    ],
+    "reactions": [
+      {
+        "name": "channel_1",
+        "kind": "rxn_uni",
+        "source_line": 16,
+        "rate": "k",
+        "efficiency": 1.0
+      }
+    ],
+    "actions": [
+      {
+        "source_order": 17,
+        "trigger": {
+          "kind": "at",
+          "time_s": 0.05
+        },
+        "action": {
+          "kind": "feed",
+          "args": [
+            "F",
+            "1",
+            "mL"
+          ]
+        }
+      },
+      {
+        "source_order": 18,
+        "trigger": {
+          "kind": "at",
+          "time_s": 0.1
+        },
+        "action": {
+          "kind": "set_c",
+          "args": [
+            "Q",
+            "0.20"
+          ]
+        }
+      },
+      {
+        "source_order": 19,
+        "trigger": {
+          "kind": "at",
+          "time_s": 0.1
+        },
+        "action": {
+          "kind": "save",
+          "args": []
+        }
+      },
+      {
+        "source_order": 20,
+        "trigger": {
+          "kind": "at",
+          "time_s": 0.2
+        },
+        "action": {
+          "kind": "add_c",
+          "args": [
+            "Q",
+            "0.10"
+          ]
+        }
+      },
+      {
+        "source_order": 21,
+        "trigger": {
+          "kind": "at",
+          "time_s": 0.2
+        },
+        "action": {
+          "kind": "save",
+          "args": []
+        }
+      },
+      {
+        "source_order": 22,
+        "trigger": {
+          "kind": "at",
+          "time_s": 0.3
+        },
+        "action": {
+          "kind": "add_c",
+          "args": [
+            "Q",
+            "-0.05"
+          ]
+        }
+      },
+      {
+        "source_order": 23,
+        "trigger": {
+          "kind": "at",
+          "time_s": 0.3
+        },
+        "action": {
+          "kind": "save",
+          "args": []
+        }
+      },
+      {
+        "source_order": 24,
+        "trigger": {
+          "kind": "at",
+          "time_s": 0.1
+        },
+        "action": {
+          "kind": "set_c",
+          "args": [
+            "M",
+            "0.20"
+          ]
+        }
+      },
+      {
+        "source_order": 25,
+        "trigger": {
+          "kind": "at",
+          "time_s": 0.2
+        },
+        "action": {
+          "kind": "add_c",
+          "args": [
+            "M",
+            "0.10"
+          ]
+        }
+      },
+      {
+        "source_order": 26,
+        "trigger": {
+          "kind": "at",
+          "time_s": 0.3
+        },
+        "action": {
+          "kind": "add_c",
+          "args": [
+            "M",
+            "-0.05"
+          ]
+        }
+      }
+    ],
+    "variables": [],
+    "engine_specific": {
+      "chain_dp_dtype": "int",
+      "chain_dp_max": "9223372036854775807",
+      "builtin_endgroups": [
+        "H",
+        "U",
+        "ACTIVE"
+      ]
+    }
+  },
+  "storage_info": {
+    "name": "slimmc-storage",
+    "format_version": "1.2.0",
+    "complete": true,
+    "hash_algorithm": "sha256",
+    "hash_schema": "slimmc-storage-hash-v1",
+    "hash": "df9a4e090ff7ebdff9da6cbcd76ec5665a198e686d1a8a19571d7ea1c247fb6d",
+    "manifest_file": "checksums.sha256",
+    "file_count": 116,
+    "total_bytes": 39675
+  }
+}

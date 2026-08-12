@@ -1,0 +1,12 @@
+desc "H18 integration: A plus B to C bimolecular reaction"
+param kmc_volume 1.0e-17
+param t_end 1.0
+param max_steps 100000
+param seed 4182
+monomer M 0.0 100.0
+species A 5.0e-4
+species B 5.0e-4
+species C 0.0
+rate k const 1.0e8
+rxn A + B -> C k
+every 0.1 save

@@ -1,0 +1,13 @@
+desc "H14 when_check_events cadence and one-shot stop"
+param kmc_volume 1.0e-17
+param temperature 298.15
+param t_end 10.0
+param max_steps 1000000
+param when_check_events 10
+param seed 1403
+monomer M 0.0 100.0
+species Q 0.20
+species R 0.0
+rate k const 20.0
+rxn Q -> R k
+when c Q < 0.18 stop

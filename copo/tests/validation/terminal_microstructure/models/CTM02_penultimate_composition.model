@@ -1,0 +1,34 @@
+desc "copo terminal-microstructure penultimate composition"
+param kmc_volume 1.0e-17
+param t_end 0.4
+param max_steps 25000
+param seed 107
+param sequence_mode composition
+monomer A 0.020 100.0
+monomer B 0.020 128.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer PAA active
+polymer PAB active
+polymer PBA active
+polymer PBB active
+polymer D dead
+rate ki 2.0e6
+rate kp 4.0e5
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro prop PA + A -> PAA kp
+macro prop PA + B -> PAB kp
+macro prop PB + A -> PBA kp
+macro prop PB + B -> PBB kp
+macro prop PAA + A -> PAA kp
+macro prop PAA + B -> PAB kp
+macro prop PAB + A -> PBA kp
+macro prop PAB + B -> PBB kp
+macro prop PBA + A -> PAA kp
+macro prop PBA + B -> PAB kp
+macro prop PBB + A -> PBA kp
+macro prop PBB + B -> PBB kp
+every 0.1 save
+every 0.2 save_chains

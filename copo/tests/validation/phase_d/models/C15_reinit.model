@@ -1,0 +1,30 @@
+desc "C15 copo transfer and reinitiation"
+param kmc_volume 1.0e-17
+param t_end .18
+param max_steps 500000
+param seed 5201
+param sequence_mode full
+param mass_model repeat_units
+monomer A .030 100.0
+monomer B .030 128.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer D dead
+species CTA 0.010
+species Rcta 0.0
+rate ki const 5.0e8
+rate kp const 2.0e5
+rate ktr const 1.0e5
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro init Rcta + A -> PA ki
+macro init Rcta + B -> PB ki
+macro prop PA + A -> PA kp
+macro prop PA + B -> PB kp
+macro prop PB + A -> PA kp
+macro prop PB + B -> PB kp
+macro transfer PA + CTA -> D + Rcta ktr
+macro transfer PB + CTA -> D + Rcta ktr
+at 0.18 save
+at 0.18 save_chains

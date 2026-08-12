@@ -1,0 +1,27 @@
+desc "C17 copo radical trapping"
+param kmc_volume 1.0e-17
+param t_end .14
+param max_steps 500000
+param seed 5203
+param sequence_mode full
+param mass_model repeat_units
+monomer A .030 100.0
+monomer B .030 128.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer D dead
+species Cap 0.010
+rate ki const 5.0e8
+rate kp const 2.0e5
+rate kx const 1.0e5
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro prop PA + A -> PA kp
+macro prop PA + B -> PB kp
+macro prop PB + A -> PA kp
+macro prop PB + B -> PB kp
+macro term_x PA + Cap -> D kx
+macro term_x PB + Cap -> D kx
+at 0.14 save
+at 0.14 save_chains

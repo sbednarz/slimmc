@@ -1,0 +1,27 @@
+desc "EQ05 homo build then disproportionation"
+param kmc_volume 1.0e-17
+param t_end 0.18
+param max_steps 400000
+param seed 9305
+param mass_model repeat_units
+monomer M 0.020 100.0
+species R 4.0e-5
+endgroup R 68.0
+endgroup ACTIVE 0.0
+endgroup H 1.008
+endgroup U 0.0
+polymer P active
+polymer D dead
+rate ki const 1.0e8
+rate kp const 1.0e5
+rate kt const 0.0
+macro init R + M -> P ki
+macro prop P + M -> P kp
+macro term_d P + P -> D + D kt
+at 0.10 set_k ki 0.0
+at 0.10 set_k kp 0.0
+at 0.10 set_k kt 1.0e8
+at 0.10 save
+at 0.10 save_chains
+at 0.18 save
+at 0.18 save_chains

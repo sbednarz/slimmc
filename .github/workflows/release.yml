@@ -1,0 +1,165 @@
+name: Release Slimmc binaries
+
+on:
+  push:
+    tags:
+      - "slimmc-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release-tests:
+    name: Complete release test suite
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Verify tag and checked-in versions
+        if: github.ref_type == 'tag'
+        run: python scripts/check_release_tag.py --component slimmc --tag "${{ github.ref_name }}"
+      - name: Verify checked-in versions
+        if: github.ref_type != 'tag'
+        run: python scripts/check_versions.py
+      - uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: "2.2.10"
+      - name: Install Python packages
+        run: python -m pip install -e ".[test]" -e ./pyslimmc_opt
+      - name: Run complete development and release gates
+        run: |
+          make test-full
+          make clean
+          python scripts/check_clean_tree.py
+          make test-release
+
+  linux-glibc:
+    name: Linux x86-64 (glibc 2.28)
+    needs: release-tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      # Do not make this a container job. Composite setup actions can resolve
+      # their scripts through host-only /home/runner paths, while container
+      # steps see /__w. Build and run one controlled image explicitly instead.
+      - name: Build pinned Rocky Linux 8.10 toolchain image
+        run: |
+          docker build --pull \
+            --file .github/release/linux-glibc-2.28.Dockerfile \
+            --tag slimmc-linux-glibc-2.28-builder:local \
+            .
+      - name: Compile, verify and package inside Rocky Linux 8.10
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            --env HOME=/tmp \
+            --env BUILD_GIT_COMMIT="$GITHUB_SHA" \
+            --env BUILD_GIT_TAG="$GITHUB_REF_NAME" \
+            --env BUILD_GIT_DIRTY=false \
+            --volume "$GITHUB_WORKSPACE:/work" \
+            --workdir /work \
+            slimmc-linux-glibc-2.28-builder:local \
+            bash scripts/ci/build_linux_glibc_2_28.sh
+
+      - name: Verify release archive exists on runner
+        run: |
+          test -f "dist/slimmc-$(cat VERSION)-linux-x86_64-glibc_2.28.zip"
+          unzip -t "dist/slimmc-$(cat VERSION)-linux-x86_64-glibc_2.28.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slimmc-linux-x86_64-glibc_2.28
+          path: dist/slimmc-*-linux-x86_64-glibc_2.28.zip
+          if-no-files-found: error
+
+  linux-musl:
+    name: Linux x86-64 (musl static)
+    needs: release-tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: "2.2.10"
+      - name: Install musl toolchain
+        run: sudo apt-get update && sudo apt-get install -y binutils musl-tools
+      - name: Compile statically linked musl binaries
+        run: >-
+          make build
+          NIMFLAGS_COMMON="--hints:off --cc:gcc --gcc.exe:musl-gcc
+          --gcc.linkerexe:musl-gcc --passL:-static"
+      - name: Verify static ELF binaries
+        run: python scripts/check_linux_binary.py --static bin/slimmc bin/slimmc-summary
+      - name: Smoke-test homo and copo dispatch
+        run: |
+          ./bin/slimmc --version
+          python scripts/check_build_provenance.py bin/slimmc --require-git
+          ./bin/slimmc --check homo/tests/regression/frp_all_channels_seeded/FRP_ALLCHAN01.model
+          ./bin/slimmc --check copo/tests/validation/phase_a/models/C01_init.model
+      - name: Build release ZIP
+        run: python scripts/package_binary_release.py --platform linux-x86_64-musl-static
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slimmc-linux-x86_64-musl-static
+          path: dist/*.zip
+
+  windows:
+    name: Windows x86-64
+    needs: release-tests
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: "2.2.10"
+      - name: Compile Windows binaries
+        shell: pwsh
+        run: |
+          $slimmc = (Get-Content VERSION -TotalCount 1).Trim()
+          $pyslimmc = (Select-String -Path pyslimmc/_version.py -Pattern '__version__ = "([^"]+)"').Matches.Groups[1].Value
+          $opt = (Select-String -Path pyslimmc_opt/__init__.py -Pattern '__version__ = "([^"]+)"').Matches.Groups[1].Value
+          $gitCommit = $env:GITHUB_SHA
+          $gitTag = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME } else { '' }
+          $gitDirty = if ((git status --porcelain).Length -eq 0) { 'false' } else { 'true' }
+          $buildTimestamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+          $provenance = @("-d:BuildGitCommit=$gitCommit", "-d:BuildGitDirty=$gitDirty", "-d:BuildTimestampUtc=$buildTimestamp")
+          if ($gitTag) { $provenance += "-d:BuildGitTag=$gitTag" }
+          New-Item -ItemType Directory -Force bin | Out-Null
+          nim c --hints:off "-d:CliVersion=$slimmc" "-d:SlimmcVersion=$slimmc" "-d:PyslimmcVersion=$pyslimmc" "-d:PyslimmcOptVersion=$opt" $provenance --nimcache:cli/nimcache/slimmc --path:homo/src --path:copo/src -d:release --opt:speed -o:bin/slimmc.exe cli/slimmc_cli.nim
+          nim c --hints:off "-d:AppVersion=$slimmc" $provenance --nimcache:cli/nimcache/summary -d:release -o:bin/slimmc-summary.exe cli/slimmc_summary.nim
+      - name: Smoke-test homo and copo dispatch
+        shell: pwsh
+        run: |
+          .\bin\slimmc.exe --version
+          python scripts/check_build_provenance.py bin/slimmc.exe --require-git
+          .\bin\slimmc.exe --check homo\tests\regression\frp_all_channels_seeded\FRP_ALLCHAN01.model
+          .\bin\slimmc.exe --check copo\tests\validation\phase_a\models\C01_init.model
+      - name: Build release ZIP
+        run: python scripts/package_binary_release.py --platform windows-x86_64 --exe .exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slimmc-windows-x86_64
+          path: dist/*.zip
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/slimmc-v')
+    needs: [linux-glibc, linux-musl, windows]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, 'rc') }}
+          files: dist/*.zip

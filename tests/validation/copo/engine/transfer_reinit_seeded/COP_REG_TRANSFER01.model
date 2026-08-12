@@ -1,0 +1,29 @@
+desc "copo seeded transfer and reinitiation validation"
+param kmc_volume 1.0e-17
+param t_end 0.5
+param max_steps 30000
+param seed 103
+param sequence_mode full
+monomer A 0.025 100.0
+monomer B 0.025 128.0
+species R 2.0e-5
+species CTA 5.0e-3
+species Rcta 0.0
+polymer PA active
+polymer PB active
+polymer D dead
+rate ki 2.0e6
+rate kp 4.0e5
+rate ktr 2.0e5
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro init Rcta + A -> PA ki
+macro init Rcta + B -> PB ki
+macro prop PA + A -> PA kp
+macro prop PA + B -> PB kp
+macro prop PB + A -> PA kp
+macro prop PB + B -> PB kp
+macro transfer PA + CTA -> D + Rcta ktr
+macro transfer PB + CTA -> D + Rcta ktr
+every 0.1 save
+every 0.25 save_chains

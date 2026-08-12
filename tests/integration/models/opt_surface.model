@@ -1,0 +1,20 @@
+desc "integration optimization surface"
+param output_dir "result"
+param kmc_volume 1.0e-17
+param t_end 0.12
+param max_steps 150000
+param seed 7401
+
+var rate kp L_mol_s
+var monomer M mol_L
+
+monomer M 0.05 100.0
+species R 1.0e-5
+polymer P active
+polymer D dead
+rate ki const 2.0e6
+rate kp const 2.0e5
+macro init R + M -> P ki
+macro prop P + M -> P kp
+every 0.04 save
+

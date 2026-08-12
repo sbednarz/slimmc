@@ -1,0 +1,15 @@
+desc "H14 initial conditions, AND, and independent when lines"
+param kmc_volume 1.0e-17
+param temperature 298.15
+param t_end 0.20
+param max_steps 1000
+param seed 1401
+monomer M 0.20 100.0
+species Q 0.20
+species R 0.0
+species S 0.0
+rate k const 0.0
+rxn Q -> R k
+when c Q > 0.15 set_c R 0.10
+when c Q > 0.15 and c R > 0.05 set_c S 0.20
+when c S > 0.15 print "cascade complete"

@@ -1,0 +1,17 @@
+desc "C12 set_k/add_k and temperature action chronology"
+param kmc_volume 1.0e-17
+param temperature 300.0
+param t_end 0.50
+param max_steps 100000
+param seed 1201
+monomer M 0.0 100.0
+monomer B 0.0 128.0
+species Q 0.0
+species R 0.0
+polymer D dead
+rate k arr 1.0e3 10000
+rxn Q -> R k
+at 0.10 set_k k 2.5
+at 0.20 add_k k 1.5
+at 0.30 set_temp 320.0
+at 0.40 add_temp 5.0

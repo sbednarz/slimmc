@@ -1,0 +1,7 @@
+# group	model
+channels	../engine/binary_terminal_seeded/COP_REG_BINARY01.model
+channels	../engine/transfer_reinit_seeded/COP_REG_TRANSFER01.model
+channels	../engine/deprop_terminal_seeded/COP_REG_DEPROP01.model
+channels	../engine/penultimate_seeded/COP_REG_PENULTIMATE01.model
+pyslimmc_live	../engine/binary_terminal_seeded/COP_REG_BINARY01.model
+pyslimmc_live	../engine/deprop_terminal_seeded/COP_REG_DEPROP01.model

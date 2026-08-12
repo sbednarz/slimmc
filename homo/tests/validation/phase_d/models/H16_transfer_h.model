@@ -1,0 +1,26 @@
+desc "H16 integration: build living chains then transfer-H"
+param kmc_volume 1.0e-17
+param t_end 0.35
+param max_steps 400000
+param seed 4161
+param mass_model repeat_units
+monomer M 0.020 100.0
+species R 2.0e-5
+species CTA 2.0e-4
+species Rcta 0.0
+endgroup R 68.0
+endgroup ACTIVE 0.0
+endgroup H 1.008
+polymer P active
+polymer D dead
+rate ki const 1.0e8
+rate kp const 1.0e5
+rate ktr const 0.0
+macro init R + M -> P ki
+macro prop P + M -> P kp
+macro transfer P + CTA -> D + Rcta ktr
+at 0.15 set_k ki 0.0
+at 0.15 set_k kp 0.0
+at 0.15 set_k ktr 2.0e5
+every 0.025 save
+every 0.025 save_chains

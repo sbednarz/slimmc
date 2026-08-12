@@ -1,0 +1,11 @@
+desc "H18 integration: A to B unimolecular reaction"
+param kmc_volume 1.0e-17
+param t_end 1.0
+param max_steps 100000
+param seed 4181
+monomer M 0.0 100.0
+species A 5.0e-4
+species B 0.0
+rate k const 20.0
+rxn A -> B k
+every 0.1 save

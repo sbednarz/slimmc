@@ -1,0 +1,17 @@
+desc "R007 missing propagation transitions mean zero"
+param kmc_volume 1.0e-17
+param t_end 0.1
+param max_steps 100000
+param seed 7007
+monomer A 0.05 100
+monomer B 0.01 120
+species R 1e-5
+polymer PA active
+polymer D dead
+rate start_A const 1e9
+rate only_A_growth const 1e8
+macro init R + A -> PA start_A
+macro prop PA + A -> PA only_A_growth
+every 0.02 save
+at 0.1 save_chains
+param output_dir "results/main"

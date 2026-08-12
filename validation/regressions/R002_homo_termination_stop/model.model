@@ -1,0 +1,17 @@
+desc "R002 homo termination stop"
+param output_dir "results/main"
+param kmc_volume 1.0e-17
+param t_end 2
+param seed 9002
+monomer A 0.05 100
+species R 2e-5
+polymer P active
+polymer D dead
+rate ki const 2e6
+rate kp const 5e5
+rate ktc const 1e6
+macro init R + A -> P ki
+macro prop P + A -> P kp
+macro term_c P + P -> D ktc
+every 0.05 save
+when X A > 0.20 stop

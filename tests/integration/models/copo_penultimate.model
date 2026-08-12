@@ -1,0 +1,38 @@
+desc "integration penultimate copolymerization"
+param output_dir "result"
+param kmc_volume 1.0e-16
+param t_end 0.20
+param max_steps 150000
+param seed 7212
+param sequence_mode full
+
+monomer A 0.003 100.0
+monomer B 0.003 128.0
+species R 3.0e-6
+polymer PA active
+polymer PB active
+polymer PAA active
+polymer PAB active
+polymer PBA active
+polymer PBB active
+polymer D dead
+
+rate ki 2.0e7
+rate kp 4.0e6
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro prop PA + A -> PAA kp
+macro prop PA + B -> PAB kp
+macro prop PB + A -> PBA kp
+macro prop PB + B -> PBB kp
+macro prop PAA + A -> PAA kp
+macro prop PAA + B -> PAB kp
+macro prop PAB + A -> PBA kp
+macro prop PAB + B -> PBB kp
+macro prop PBA + A -> PAA kp
+macro prop PBA + B -> PAB kp
+macro prop PBB + A -> PBA kp
+macro prop PBB + B -> PBB kp
+every 0.04 save
+every 0.10 save_chains
+

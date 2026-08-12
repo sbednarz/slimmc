@@ -1,0 +1,20 @@
+desc "H13 set_c/add_c exact chronology without parameter-state changes"
+param kmc_volume 1.0e-17
+param temperature 298.15
+param t_end 0.40
+param max_steps 1000
+param seed 1301
+monomer M 0.10 100.0
+species Q 0.10
+species R 0.0
+rate k const 0.0
+rxn Q -> R k
+at 0.10 set_c Q 0.20
+at 0.10 save
+at 0.20 add_c Q 0.10
+at 0.20 save
+at 0.30 add_c Q -0.05
+at 0.30 save
+at 0.10 set_c M 0.20
+at 0.20 add_c M 0.10
+at 0.30 add_c M -0.05

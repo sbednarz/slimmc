@@ -1,0 +1,21 @@
+desc "integration conditional stop"
+param output_dir "result"
+param kmc_volume 1.0e-17
+param t_end 10.0
+param max_steps 1000000
+param when_check_events 1
+param seed 7112
+
+monomer M 0.05 100.0
+species R 1.0e-5
+polymer P active
+polymer D dead
+rate ki 1.0e6
+rate kp 1.0e5
+macro init R + M -> P ki
+macro prop P + M -> P kp
+
+when X M > -0.1 save
+when X M > -0.1 save_chains
+when X M > -0.1 stop
+

@@ -1,0 +1,20 @@
+desc "C08-C09 copo validation: competing channels and normalized SSA waiting times"
+param kmc_volume 1.0e-17
+param t_end 100.0
+param max_steps 8000
+param seed 4201
+param sequence_mode full
+param mass_model repeat_units
+monomer A 0.0 100.0
+monomer B 0.0 128.0
+species Q 0.020
+species X 0.0
+species Y 0.0
+polymer PA active
+polymer PB active
+polymer D dead
+rate k1 const 100.0
+rate k2 const 300.0
+rxn Q -> X k1
+rxn Q -> Y k2
+every 10.0 save

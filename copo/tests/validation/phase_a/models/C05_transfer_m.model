@@ -1,0 +1,33 @@
+desc "C05 copo black-box transfer to monomer"
+param kmc_volume 1.0e-17
+param t_end .12
+param max_steps 500000
+param seed 5105
+param sequence_mode full
+param mass_model repeat_units
+monomer A .035 100.0
+monomer B .035 128.0
+species R 2.0e-5
+polymer PA active
+polymer PB active
+polymer D dead
+rate ki const 1.0e9
+rate kp const 2.0e5
+rate ktm const 0.0
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro prop PA + A -> PA kp
+macro prop PA + B -> PB kp
+macro prop PB + A -> PA kp
+macro prop PB + B -> PB kp
+macro transfer_m PA + A -> D + PA ktm
+macro transfer_m PA + B -> D + PB ktm
+macro transfer_m PB + A -> D + PA ktm
+macro transfer_m PB + B -> D + PB ktm
+at 0.05 set_k ki 0.0
+at 0.05 set_k kp 0.0
+at 0.05 set_k ktm 2.0e5
+at 0.05 save
+at 0.05 save_chains
+at 0.12 save
+at 0.12 save_chains

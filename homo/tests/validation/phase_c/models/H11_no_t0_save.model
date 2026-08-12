@@ -1,0 +1,12 @@
+desc "H11 every starts at t=0 on a regular periodic grid"
+param kmc_volume 1.0e-17
+param temperature 298.15
+param t_end 0.35
+param max_steps 1000
+param seed 1101
+monomer M 0.0 100.0
+species Q 0.1
+species R 0.0
+rate k const 0.0
+rxn Q -> R k
+every 0.10 save

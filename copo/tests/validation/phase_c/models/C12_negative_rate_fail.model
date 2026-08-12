@@ -1,0 +1,14 @@
+desc "C12 invalid add_k below zero must fail cleanly"
+param kmc_volume 1.0e-17
+param temperature 298.15
+param t_end 0.20
+param max_steps 1000
+param seed 1203
+monomer M 0.0 100.0
+monomer B 0.0 128.0
+species Q 0.0
+species R 0.0
+polymer D dead
+rate k const 1.0
+rxn Q -> R k
+at 0.10 add_k k -2.0

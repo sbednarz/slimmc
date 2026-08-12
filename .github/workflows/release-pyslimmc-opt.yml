@@ -1,0 +1,61 @@
+name: Release pyslimmc-opt
+
+on:
+  push:
+    tags:
+      - "pyslimmc-opt-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Verify tag and checked-in versions
+        if: github.ref_type == 'tag'
+        run: python scripts/check_release_tag.py --component pyslimmc-opt --tag "${{ github.ref_name }}"
+      - name: Verify checked-in versions
+        if: github.ref_type != 'tag'
+        run: python scripts/check_versions.py
+      - name: Install build and test dependencies
+        run: python -m pip install build twine -e ".[test]" -e ./pyslimmc_opt
+      - name: Test pyslimmc-opt
+        run: python -m pytest -q pyslimmc_opt/tests
+      - name: Build and inspect distribution
+        run: |
+          python -m build pyslimmc_opt --outdir dist
+          python -m twine check dist/*
+          python - <<'PY'
+          import glob, zipfile
+          wheel = glob.glob("dist/*.whl")
+          assert len(wheel) == 1, wheel
+          names = zipfile.ZipFile(wheel[0]).namelist()
+          assert any(n.startswith("pyslimmc_opt/") for n in names)
+          assert not any(n.startswith("pyslimmc/") for n in names)
+          print("pyslimmc-opt wheel contents: PASS")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pyslimmc-opt-python-distributions
+          path: dist/*
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/pyslimmc-opt-v')
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pyslimmc-opt-python-distributions
+          path: dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, 'rc') }}
+          files: dist/*

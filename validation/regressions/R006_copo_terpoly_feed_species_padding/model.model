@@ -1,0 +1,50 @@
+desc "202 - Semibatch terpolymer C feed"
+param output_dir "results/main"
+param init_volume 0.001
+param kmc_volume 1.0e-17
+param t_end 0.8
+param max_steps 1000000
+param seed 2202
+param sequence_mode full
+param mass_model repeat_units
+monomer A 0.03 100.0
+monomer B 0.03 128.0
+monomer C 0.005 142.0
+feed CFEED C 0.20
+species R 3.0e-5
+polymer PA active
+polymer PB active
+polymer PC active
+polymer D dead
+rate ki 2.0e6
+rate kp_aa 800000.0
+rate kp_ab 200000.0
+rate kp_ac 300000.0
+rate kp_ba 800000.0
+rate kp_bb 200000.0
+rate kp_bc 300000.0
+rate kp_ca 800000.0
+rate kp_cb 200000.0
+rate kp_cc 300000.0
+rate ktc 8.0e5
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro init R + C -> PC ki
+macro prop PA + A -> PA kp_aa
+macro prop PA + B -> PB kp_ab
+macro prop PA + C -> PC kp_ac
+macro prop PB + A -> PA kp_ba
+macro prop PB + B -> PB kp_bb
+macro prop PB + C -> PC kp_bc
+macro prop PC + A -> PA kp_ca
+macro prop PC + B -> PB kp_cb
+macro prop PC + C -> PC kp_cc
+macro term_c PA + PA -> D ktc
+macro term_c PA + PB -> D ktc
+macro term_c PA + PC -> D ktc
+macro term_c PB + PB -> D ktc
+macro term_c PB + PC -> D ktc
+macro term_c PC + PC -> D ktc
+at 0.20 feed CFEED 0.02 mL
+every 0.04 save
+every 0.20 save_chains

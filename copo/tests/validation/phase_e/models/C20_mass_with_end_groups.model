@@ -1,0 +1,25 @@
+desc "C20 copo mass model: repeat units plus end groups"
+param kmc_volume 1.0e-17
+param t_end 0.12
+param max_steps 200000
+param seed 3501
+param sequence_mode full
+param mass_model with_end_groups
+monomer A 0.012 100.0
+monomer B 0.008 128.0
+species R 2.0e-5
+endgroup R 68.0
+endgroup ACTIVE 2.0
+polymer PA active
+polymer PB active
+polymer D dead
+rate ki 1.0e8
+rate kp 2.0e5
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro prop PA + A -> PA kp
+macro prop PA + B -> PB kp
+macro prop PB + A -> PA kp
+macro prop PB + B -> PB kp
+every 0.03 save
+every 0.03 save_chains
