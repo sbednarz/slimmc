@@ -1,5 +1,12 @@
 # Scope and limitations
- 
+
+slimmc is a working prototype in three senses at once: a prototype simulator,
+whose architecture is demonstrated but whose results are not yet verified; a
+prototype of a development method, testing what scientific software built with
+extensive AI assistance actually looks like; and a prototype research tool,
+written to answer specific questions in the author's own work rather than to
+serve as general-purpose software.
+
 slimmc intentionally models a defined subset of polymer reaction kinetics. This
 page separates deliberate scope boundaries from numerical/statistical
 limitations so that unsupported chemistry is not mistaken for a bug or an
