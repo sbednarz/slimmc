@@ -1,0 +1,23 @@
+desc "F02 analytic: combination-only steady state -> convolved CLD, D = 1.5"
+param kmc_volume 2.0e-15
+param t_end 10.0
+param max_steps 20000000
+param seed 6102
+param mass_model repeat_units
+monomer M 1.0 100.0
+species I 1.0e-3
+species R 0.0
+endgroup R 68.0
+endgroup ACTIVE 0.0
+polymer P active
+polymer D dead
+rate kd const 1.0e-3
+rate ki const 1.0e8
+rate kp const 1.0e3
+rate ktc const 1.0e8
+rxn I -> R + R kd 0.5
+macro init R + M -> P ki
+macro prop P + M -> P kp
+macro term_c P + P -> D ktc
+every 2.0 save
+at 10.0 save_chains

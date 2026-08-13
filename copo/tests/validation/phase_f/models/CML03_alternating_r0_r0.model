@@ -1,0 +1,31 @@
+desc "CML03 analytic: r1 = r2 = 0 -> strictly alternating, F_A = 0.5, no AA or BB dyads"
+param kmc_volume 5.0e-16
+param t_end 10.0
+param max_steps 30000000
+param seed 6203
+param sequence_mode full
+param mass_model repeat_units
+monomer A 0.300 100.0
+monomer B 0.700 128.0
+species I 1.0e-3
+species R 0.0
+polymer PA active
+polymer PB active
+polymer D dead
+rate kd const 1.0e-3
+rate ki const 1.0e8
+rate kcross const 1.0e3
+rate kself const 0.0
+rate ktd const 1.0e8
+rxn I -> R + R kd 0.5
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro prop PA + A -> PA kself
+macro prop PA + B -> PB kcross
+macro prop PB + A -> PA kcross
+macro prop PB + B -> PB kself
+macro term_d PA + PA -> D + D ktd
+macro term_d PA + PB -> D + D ktd
+macro term_d PB + PB -> D + D ktd
+every 1.0 save
+at 10.0 save_chains

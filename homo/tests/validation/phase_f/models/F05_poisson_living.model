@@ -1,0 +1,15 @@
+desc "F05 analytic: instantaneous initiation, no termination -> Poisson CLD, D = 1 + 1/DPn"
+param kmc_volume 2.0e-15
+param t_end 2.0
+param max_steps 20000000
+param seed 6108
+param mass_model repeat_units
+monomer M 0.020 100.0
+species R 1.0e-4
+polymer P active
+rate ki const 1.0e10
+rate kp const 1.0e3
+macro init R + M -> P ki
+macro prop P + M -> P kp
+every 0.5 save
+at 2.0 save_chains

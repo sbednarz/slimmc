@@ -1,0 +1,33 @@
+desc "CML01 analytic: instantaneous composition vs Mayo-Lewis, r1 = 0.5, r2 = 2.0"
+param kmc_volume 5.0e-16
+param t_end 10.0
+param max_steps 30000000
+param seed 6201
+param sequence_mode full
+param mass_model repeat_units
+monomer A 0.500 100.0
+monomer B 0.500 128.0
+species I 1.0e-3
+species R 0.0
+polymer PA active
+polymer PB active
+polymer D dead
+rate kd const 1.0e-3
+rate ki const 1.0e8
+rate kpAA const 1.0e3
+rate kpAB const 2.0e3
+rate kpBA const 5.0e2
+rate kpBB const 1.0e3
+rate ktd const 1.0e8
+rxn I -> R + R kd 0.5
+macro init R + A -> PA ki
+macro init R + B -> PB ki
+macro prop PA + A -> PA kpAA
+macro prop PA + B -> PB kpAB
+macro prop PB + A -> PA kpBA
+macro prop PB + B -> PB kpBB
+macro term_d PA + PA -> D + D ktd
+macro term_d PA + PB -> D + D ktd
+macro term_d PB + PB -> D + D ktd
+every 1.0 save
+at 10.0 save_chains
