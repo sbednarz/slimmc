@@ -37,7 +37,7 @@ Marco Drache and collaborators.
 - **Transparency about AI involvement, independent validation, and responsibility for scientific claims** are core principles of the project.
 
 
-## What slimmc does — and does not do
+## What slimmc does
 
 - simulation of radical homo- and copolymerization under **batch and
   semibatch** conditions;
