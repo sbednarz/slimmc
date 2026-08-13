@@ -164,8 +164,8 @@ pyslimmc-opt.
 
 ## Current releases
 
-- **slimmc 5.0.0** — native simulator binaries for Linux and Windows  
-  [Release page](https://github.com/sbednarz/slimmc/releases/tag/slimmc-v5.0.0)
+- **slimmc 5.0.1** — native simulator binaries for Linux and Windows  
+  [Release page](https://github.com/sbednarz/slimmc/releases/tag/slimmc-v5.0.1)
 
 - **pyslimmc 4.0.0** — Python analysis package  
   [Release page](https://github.com/sbednarz/slimmc/releases/tag/pyslimmc-v4.0.0)
