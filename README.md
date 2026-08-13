@@ -11,6 +11,33 @@ conversion, chain populations, molecular-weight distributions, copolymer
 composition, and selected microstructure information. Results can be explored
 with `pyslimmc` in Python.
 
+## A short history
+
+slimmc began as a **manually written Nim homopolymer/PLP simulator**, motivated
+in part by the limited availability of accessible **open-source software for
+SSA/kMC simulation of radical polymerization**. It was later expanded into the
+current homo/copo family, shared storage format, and Python analysis stack.
+
+Subsequent development, testing, and documentation were conducted with
+extensive assistance from **OpenAI ChatGPT and Anthropic Claude** as engineering
+tools under human direction and review; they are not project authors.
+
+The project concept was influenced by the long tradition of polymer kMC
+software, in particular the excellent open-source
+[mcPolymer](https://www.itc.tu-clausthal.de/en/research/mcpolymer) developed by
+Marco Drache and collaborators.
+
+
+## Important note: experimental status and AI-assisted development
+
+- **slimmc is experimental software, and the project itself is an experiment in developing scientific simulation software with extensive AI assistance.**
+- AI can provide useful and sometimes creative solutions, but it may also produce code whose full logic is difficult to reconstruct, independently verify, and fully understand by inspection alone.
+- slimmc is provided **“as is”**, without warranty of scientific correctness, reliability, or fitness for a particular purpose. **The author assumes no responsibility for conclusions, decisions, or consequences arising from its use.**
+- The current release should **not yet be regarded as a validated quantitative research tool**.
+- Validation will include **analytical cases, independent implementations, other modelling approaches, and published experimental literature**.
+- **Transparency about AI involvement, independent validation, and responsibility for scientific claims** are core principles of the project.
+
+
 ## What slimmc does — and does not do
 
 - simulation of radical homo- and copolymerization under **batch and
@@ -62,20 +89,6 @@ with `pyslimmc` in Python.
 
 See [Scope and limitations](docs/LIMITATIONS.md) before designing a study that
 depends on any of these features.
-
-## A short history
-
-slimmc began as a **manually written Nim homopolymer/PLP simulator** and was later
-expanded into the current homo/copo family, shared storage format, and Python
-analysis stack. Subsequent development, testing, and documentation were
-conducted with extensive assistance from **OpenAI ChatGPT and Anthropic
-Claude** as engineering tools under human direction and review; they are not
-project authors.
-
-The project concept was influenced by the long tradition of polymer kMC
-software, in particular the excellent open-source
-[mcPolymer](https://www.itc.tu-clausthal.de/en/research/mcpolymer) developed by
-Marco Drache and collaborators.
 
 ## How a calculation actually goes
 
