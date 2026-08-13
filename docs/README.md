@@ -4,10 +4,11 @@
 >
 > slimmc is experimental scientific software, and the project itself is an
 > experiment in developing simulation software with extensive AI assistance.
-> The current release is provided **“as is”** and should **not yet be regarded
-> as a validated quantitative research tool**. Its results are being validated
-> against analytical cases, independent implementations, other modelling
-> approaches, and published experimental literature.
+> The current release is provided **“as is”**. **Validation has not been
+> carried out**, and results should not be treated as quantitative
+> predictions. Validation will proceed against analytical cases, independent
+> implementations, other modelling approaches, and published experimental
+> literature.
 >
 > AI-assisted development can produce useful and creative solutions, but also
 > code that is difficult to fully reconstruct and independently verify by
@@ -15,7 +16,6 @@
 > and responsibility for scientific claims** are core principles of the project.
 
 
- 
 The documentation has three entry paths. Start with the one that matches what
 you are trying to do; exact references remain available when you need a formal
 contract.
