@@ -32,9 +32,8 @@ Marco Drache and collaborators.
 
 - **slimmc is experimental software, and the project itself is an experiment in developing scientific simulation software with extensive AI assistance.**
 - AI can provide useful and sometimes creative solutions, but it may also produce code whose full logic is difficult to reconstruct, independently verify, and fully understand by inspection alone.
-- slimmc is provided **“as is”**, without warranty of scientific correctness, reliability, or fitness for a particular purpose. **The author assumes no responsibility for conclusions, decisions, or consequences arising from its use.**
-- The current release should **not yet be regarded as a validated quantitative research tool**.
-- Validation will include **analytical cases, independent implementations, other modelling approaches, and published experimental literature**.
+- slimmc is provided **"as is"**, without warranty of scientific correctness, reliability, or fitness for a particular purpose. **The author assumes no responsibility for conclusions, decisions, or consequences arising from its use.**
+- **Validation has not been carried out.** It will proceed through analytical cases, independent implementations, other modelling approaches, and published experimental literature.
 - **Transparency about AI involvement, independent validation, and responsibility for scientific claims** are core principles of the project.
 
 
@@ -42,7 +41,7 @@ Marco Drache and collaborators.
 
 - simulation of radical homo- and copolymerization under **batch and
   semibatch** conditions;
-- prediction of conversion, living/dead chain populations, molecular-weight
+- computation of conversion, living/dead chain populations, molecular-weight
   and chain-length distributions, copolymer composition, and selected
   microstructure;
 - analysis across the full molecular-size range, from **small molecules
