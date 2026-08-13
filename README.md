@@ -9,7 +9,14 @@ follows individual polymer chains as they grow, terminate, transfer, or
 depolymerize. It supports homo- and copolymerization and can provide
 conversion, chain populations, molecular-weight distributions, copolymer
 composition, and selected microstructure information. Results can be explored
-with `pyslimmc` in Python.
+with `pyslimmc` in Python. 
+
+**slimmc is a working prototype** in three senses at once: a prototype simulator,
+whose architecture is demonstrated but whose results are not yet verified; a
+prototype of a development method, testing what scientific software built with
+extensive AI assistance actually looks like; and a prototype research tool,
+written to answer specific questions in the author's own work rather than to
+serve as general-purpose software.
 
 ## A short history
 
