@@ -164,7 +164,26 @@ proc printStatus*(m: Model; s: State; wallStart: float; opts: RunOptions) =
     " mem=" & formatFloat(memMiB, ffDecimal, 1) & " MiB" &
     " wall=" & formatFloat(wall, ffDecimal, 1) & "s " & stamp
   stdout.writeLine(line)
+  stdout.flushFile()
   appendRunLog(m, line)
+
+proc printStart*(m: Model) =
+  let line = "[start] run_id=" & m.modelStem &
+    " t_end=" & formatFloat(m.t_end, ffScientific, 2) &
+    " output=" & m.output_dir
+  stdout.writeLine(line)
+  stdout.flushFile()
+  appendRunLog(m, line)
+
+proc printDone*(m: Model; s: State; status, reason: string; wallSeconds: float) =
+  let line = "[done] status=" & status &
+    " reason=" & reason &
+    " event=" & $s.kmcEvent &
+    " t=" & formatFloat(s.t, ffScientific, 6) &
+    " wall=" & formatFloat(wallSeconds, ffDecimal, 1) & "s" &
+    " output=" & m.output_dir
+  stdout.writeLine(line)
+  stdout.flushFile()
 
 proc printMemory*(m: Model; s: State) =
   let mem = estimateMemory(m, s)
@@ -176,6 +195,7 @@ proc printMemory*(m: Model; s: State) =
        " live_objects=", fmtBytes(mem.liveObjectBytes),
        " dead_summary=", fmtBytes(mem.deadSummaryBytes),
        " total_est=", fmtBytes(mem.totalBytes)
+  stdout.flushFile()
 
 proc printCheck*(m: Model) =
   let preflight = computeDiscretizationPreflight(m)

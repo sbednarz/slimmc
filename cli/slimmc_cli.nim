@@ -47,7 +47,7 @@ import ../common/build_provenance
 
 const AppName = "slimmc"
 const
-  CliVersion {.strdefine.} = "5.0.0"
+  CliVersion {.strdefine.} = "5.0.1"
   PyslimmcVersion {.strdefine.} = "4.0.0"
   PyslimmcOptVersion {.strdefine.} = "1.0.0"
 

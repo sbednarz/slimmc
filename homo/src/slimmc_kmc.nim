@@ -459,6 +459,7 @@ proc executeAction(
     let sp = m.getSpeciesId(args[0], lineNo)
     let warning = "WARNING: line " & $lineNo & ": set_c forces the concentration of '" & args[0] & "'. Its physical material balance is invalid after this action."
     stdout.writeLine(warning)
+    stdout.flushFile()
     logLine(m, opts, warning)
     result.target = args[0]
     result.requested = args[1]
@@ -739,16 +740,17 @@ proc runSimulation*(m0: Model; opts: RunOptions = RunOptions()) =
       initDebugFile(m)
       debugCheckState(m, s, "initial state")
 
+    # Automatic lifecycle messages are deliberately distinct from
+    # model-controlled `print_info` progress lines, and the start marker
+    # precedes any model action scheduled at t=0.
+    printStart(m, opts)
+
     processDueActions(m, s, wallStart, opts)
     if m.conditionalActions.len > 0:
       checkConditionalActions(m, s, wallStart, opts, "initial")
     if s.stopRequested:
       stopReason = "stop_condition"
       runStatus = "completed"
-
-    # Match copo CLI behavior: emit one immediate status line so an
-    # interactive user can see that the simulation started successfully.
-    printProgress(m, s, wallStart, opts)
 
     while not resultsInterruptRequested and not s.stopRequested and s.t < m.tEnd - timeTolerance(s.t, m.tEnd) and s.kmcEvent < m.maxEvents:
       let tScheduled = nextScheduledActionTime(m.scheduledActions)
@@ -841,9 +843,6 @@ proc runSimulation*(m0: Model; opts: RunOptions = RunOptions()) =
       publishStorageV1(m, s, rsInterrupted, startedAt, finishedAt, wallSeconds, 130, "user_interrupt")
       return
 
-    # Final status mirrors copo and provides a concise human-readable
-    # summary even when the model contains no explicit `print_info` action.
-    printProgress(m, s, wallStart, opts)
     saveSnapshot(m, s, withChains = true, source = "final", isFinal = true)
     let wallSeconds = epochTime() - wallStart
     let finishedAt = now().utc.format("yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -853,7 +852,7 @@ proc runSimulation*(m0: Model; opts: RunOptions = RunOptions()) =
       debugCheckState(m, s, "final state")
       writeDebugFinal(m, s, stopReason, wallSeconds)
     publishStorageV1(m, s, rsCompleted, startedAt, finishedAt, wallSeconds, 0, stopReason)
-    echo "[done] event=", s.kmcEvent, " t=", s.t, " output=", m.outputDir
+    printDone(m, s, opts, runStatus, stopReason, wallSeconds)
   except CatchableError as e:
     if resultsInitialized:
       let wallSeconds = epochTime() - wallStart

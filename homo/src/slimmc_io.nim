@@ -239,6 +239,7 @@ proc printMemory*(m: Model; s: State) =
   echo "[memory] live_chains=", mem.liveChains,
        " dead_chains=", mem.deadChains,
        " total_est=", fmtBytes(mem.totalBytes)
+  stdout.flushFile()
 
 proc printProgress*(m: Model; s: State; wallStart: float; opts: RunOptions) =
   let pct = if m.tEnd > 0.0: 100.0 * s.t / m.tEnd else: 0.0
@@ -251,10 +252,30 @@ proc printProgress*(m: Model; s: State; wallStart: float; opts: RunOptions) =
     " conv=" & monomerName & ":" & numDec(monomerConversion(m, s), 4) &
     " wall=" & numDec(wall, 1) & "s " & stamp
   stdout.writeLine(line)
+  stdout.flushFile()
   logLine(m, opts, line)
+
+proc printStart*(m: Model; opts: RunOptions) =
+  let line = "[start] run_id=" & m.runId &
+    " t_end=" & formatFloat(m.tEnd, ffScientific, 2) &
+    " output=" & m.outputDir
+  stdout.writeLine(line)
+  stdout.flushFile()
+  logLine(m, opts, line)
+
+proc printDone*(m: Model; s: State; opts: RunOptions; status, reason: string; wallSeconds: float) =
+  let line = "[done] status=" & status &
+    " reason=" & reason &
+    " event=" & $s.kmcEvent &
+    " t=" & formatFloat(s.t, ffScientific, 6) &
+    " wall=" & numDec(wallSeconds, 1) & "s" &
+    " output=" & m.outputDir
+  stdout.writeLine(line)
+  stdout.flushFile()
 
 proc printMarker*(m: Model; opts: RunOptions; message: string) =
   stdout.writeLine(message)
+  stdout.flushFile()
   logLine(m, opts, message)
 
 proc printCheck*(m: Model) =

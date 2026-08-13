@@ -452,6 +452,7 @@ proc executeAction(m: var Model; s: var State; action: ActionKind; args: seq[str
     # "[action] t=..." prefix (previously present here, unlike homo's
     # printMarker(), which has always written just the bare message).
     stdout.writeLine(args[0])
+    stdout.flushFile()
     result = false
   of eaPrintInfo:
     printStatus(m, s, wallStart, opts)
@@ -506,6 +507,7 @@ proc executeAction(m: var Model; s: var State; action: ActionKind; args: seq[str
     let target = targetConc(m, s, args[0], lineNo)
     let warning = "WARNING: line " & $lineNo & ": set_c forces the concentration of '" & args[0] & "'. Its physical material balance is invalid after this action."
     stdout.writeLine(warning)
+    stdout.flushFile()
     appendRunLog(m, warning)
     let c = parseFloat(args[1])
     if c < 0.0: actionFail(lineNo, "set_c requires concentration >= 0")
@@ -722,15 +724,14 @@ proc runSimulation*(m: Model; opts: RunOptions = RunOptions()) =
   initDiagnostics(model, opts)
   initParameterStates(model, s)
   debugCheckState(model, s, opts, "initial")
-  if true:
-    appendRunLog(model, "[start] run_id=" & model.modelStem & " t_end=" & $model.t_end & " max_steps=" & $model.max_steps)
-
+  # Keep the automatic lifecycle marker separate from `print_info`, and
+  # emit it before any model action scheduled at t=0.
+  printStart(model)
   discard processDueActions(model, s, opts, wallStart)
   checkConditionalActions(model, s, opts, "initial", wallStart)
   if s.stopRequested:
     runStatus = "completed"
     stopReason = "stop_condition"
-  printStatus(model, s, wallStart, opts)
   # NOTE (family parity): classic slimmc never
   # writes state/moments/etc. unless the model explicitly asks for it via a
   # `save`/`save_chains` action. The unconditional snapshot that used to be
@@ -765,7 +766,8 @@ proc runSimulation*(m: Model; opts: RunOptions = RunOptions()) =
         continue
       runStatus = "stopped"
       stopReason = "no_active_channels"
-      echo "[run] stopped normally: no active channels at event=", s.kmcEvent, " t=", s.t
+      echo "[stop] reason=no_active_channels event=", s.kmcEvent, " t=", s.t
+      stdout.flushFile()
       if true:
         appendRunLog(model, "[stop] no active channels event=" & $s.kmcEvent & " t=" & $s.t)
       break
@@ -853,17 +855,16 @@ proc runSimulation*(m: Model; opts: RunOptions = RunOptions()) =
     finalizeInterruptedStorageV1(model, s, wallSeconds, 130)
     writeRunInfo(model, s, opts, "interrupted", "user_interrupt", wallSeconds, startedAt)
     echo "[interrupted] event=", s.kmcEvent, " t=", s.t, " output=", model.output_dir
+    stdout.flushFile()
     unsetControlCHook()
     return
 
-  let finalPrintedByAction = processDueActions(model, s, opts, wallStart)
-  if not finalPrintedByAction:
-    printStatus(model, s, wallStart, opts)
+  discard processDueActions(model, s, opts, wallStart)
   debugCheckState(model, s, opts, "final")
   saveSnapshot(model, s, true, "final", true)
   let wallSeconds = epochTime() - wallStart
   appendRunLog(model, "[done] event=" & $s.kmcEvent & " t=" & $s.t & " status=" & runStatus & " reason=" & stopReason & " output=" & model.output_dir)
   finalizeStorageV1(model, s, wallSeconds, stopReason)
   writeRunInfo(model, s, opts, runStatus, stopReason, wallSeconds, startedAt)
-  echo "[done] event=", s.kmcEvent, " t=", s.t, " output=", model.output_dir
+  printDone(model, s, runStatus, stopReason, wallSeconds)
   unsetControlCHook()

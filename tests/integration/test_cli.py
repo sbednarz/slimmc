@@ -45,10 +45,23 @@ def test_homo_run_reports_start_and_done(slimmc_cli: Path, tmp_path: Path):
     proc = _call(slimmc_cli, model.name, cwd=tmp_path)
     assert proc.returncode == 0, proc.stdout + proc.stderr
     lines = [line for line in proc.stdout.splitlines() if line.strip()]
-    assert lines and lines[0].startswith("[run] event=0 ")
-    assert any(line.startswith("[run] ") and "100.0%" in line for line in lines)
-    assert lines[-1].startswith("[done] ")
+    assert lines and lines[0].startswith("[start] ")
+    assert not any(line.startswith("[run] ") for line in lines)
+    assert lines[-1].startswith("[done] status=")
     assert "output=" in lines[-1]
+
+
+
+def test_homo_print_info_is_distinct_from_lifecycle_messages(slimmc_cli: Path, tmp_path: Path):
+    source = Path(__file__).with_name("models") / "homo_mechanisms.model"
+    model = tmp_path / "homo_print_info.model"
+    model.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+    proc = _call(slimmc_cli, model.name, cwd=tmp_path)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    lines = [line for line in proc.stdout.splitlines() if line.strip()]
+    assert lines[0].startswith("[start] ")
+    assert any(line.startswith("[run] event=0 ") for line in lines)
+    assert lines[-1].startswith("[done] status=")
 
 def test_cli_dispatches_homo(homo_run):
     assert homo_run.engine == "slimmc" and homo_run.kinetic_model == "homo"
