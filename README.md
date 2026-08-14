@@ -162,6 +162,17 @@ The `docs/reference/` layer is intended to provide complete public syntax/API
 coverage, including generated callable-signature inventories for pyslimmc and
 pyslimmc-opt.
 
+## Examples and case studies
+
+Worked examples and scientific case studies are maintained in separate
+repositories so they can develop independently from the core simulation code.
+
+- [`slimmc-examples`](https://github.com/sbednarz/slimmc-examples) — tutorials
+  and practical examples
+- [`slimmc-case-studies`](https://github.com/sbednarz/slimmc-case-studies) —
+  literature-based studies, validation, and benchmarks
+
+
 ## Current releases
 
 - **slimmc 5.0.1** — native simulator binaries for Linux and Windows  
@@ -197,16 +208,6 @@ for optimization workflows.
 
 Exact release, installation, and build details are in
 [Releases](docs/development/RELEASES.md).
-
-## Examples and case studies
-
-Worked examples and scientific case studies are maintained in separate
-repositories so they can develop independently from the core simulation code.
-
-- [`slimmc-examples`](https://github.com/sbednarz/slimmc-examples) — tutorials
-  and practical examples
-- [`slimmc-case-studies`](https://github.com/sbednarz/slimmc-case-studies) —
-  literature-based studies, validation, and benchmarks
 
 ## Citation and license
 
