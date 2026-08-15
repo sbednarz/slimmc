@@ -173,17 +173,20 @@ repositories so they can develop independently from the core simulation code.
   literature-based studies, validation, and benchmarks
 
 
-## Current releases
+## Current release family
 
-- **slimmc 5.0.0** — native simulator binaries for Linux and Windows
-  [Release page](https://github.com/sbednarz/slimmc/releases/tag/slimmc-v5.0.0)
+The following versions are tested and released together as the current Slimmc family:
 
-- **pyslimmc 4.0.0** — Python analysis package  
-  [Release page](https://github.com/sbednarz/slimmc/releases/tag/pyslimmc-v4.0.0)
+- **slimmc 5.0.2** — native simulator binaries for Linux and Windows  
+  [Release page](https://github.com/sbednarz/slimmc/releases/tag/slimmc-v5.0.2)
+
+- **pyslimmc 5.0.0** — Python analysis package  
+  [Release page](https://github.com/sbednarz/slimmc/releases/tag/pyslimmc-v5.0.0)
 
 - **pyslimmc-opt 1.0.0** — optional optimization package  
   [Release page](https://github.com/sbednarz/slimmc/releases/tag/pyslimmc-opt-v1.0.0)
 
+Use these versions together unless a release note states otherwise.
 
 ## Installation and builds
 
