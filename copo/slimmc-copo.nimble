@@ -1,5 +1,5 @@
 # Package
-version       = "5.0.2"
+version       = "5.0.3"
 # Development was assisted by OpenAI ChatGPT and Anthropic Claude; these AI
 # systems are tools, not authors or copyright holders.
 author        = "Szczepan Bednarz"

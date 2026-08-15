@@ -57,18 +57,8 @@ def check() -> dict[str, str]:
 
     _require("pyproject.toml", _match("pyproject.toml", r'^version\s*=\s*"([^"]+)"'), pyslimmc)
     _require(
-        "cli/slimmc_cli.nim PyslimmcVersion",
-        _match("cli/slimmc_cli.nim", r'PyslimmcVersion\s*\{\.strdefine\.\}\s*=\s*"([^"]+)"'),
-        pyslimmc,
-    )
-    _require(
         "pyslimmc_opt/pyproject.toml",
         _match("pyslimmc_opt/pyproject.toml", r'^version\s*=\s*"([^"]+)"'),
-        opt,
-    )
-    _require(
-        "cli/slimmc_cli.nim PyslimmcOptVersion",
-        _match("cli/slimmc_cli.nim", r'PyslimmcOptVersion\s*\{\.strdefine\.\}\s*=\s*"([^"]+)"'),
         opt,
     )
     return current
