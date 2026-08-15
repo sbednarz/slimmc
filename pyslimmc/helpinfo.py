@@ -67,8 +67,8 @@ def install() -> None:
     from . import runs as r
     from .report import Report
     from .summary import RunSummary
-    from .distribution import Distribution
-    from .spectra import ChainMassSpectrum
+    from .distributions import ChainLengthDistribution, MolarMassDistribution
+    from .counts import DPCounts, MassCounts
     from .run import MassAuditResult
 
     branch_specs={
@@ -76,14 +76,14 @@ def install() -> None:
 
 Inspect snapshots and axes with run.first, run.last, run.final, run.t, run.event and run.sid. Use run.count, run.moles, run.conc, run.conv, run.mn, run.mw, run.mz and run.dispersity for state and moments.
 
-Variables are available through run.var, run.var["name"].value, run.var.info() and run.var.help(). For distributions call run.mwd.help(), run.cld.help() or run.chain_mass_spectrum.help() before the analysis."""),
+Variables are available through run.var, run.var["name"].value, run.var.info() and run.var.help(). For distributions call run.mwd.help() or run.cld.help() before the analysis."""),
       s.StorageSnapshots:("Snapshots", "Collection of saved snapshots. Use .first, .last, .final, .at_time(...) or .at_event(...)."),
       s.StorageSnapshot:("Snapshot", "One saved simulation state. Inspect state, chains, moments, kinetics and distributions for this snapshot."),
       s.StorageStateSeries:("State", "Time-dependent state data. Inspect available entities, counts, moles and concentrations."),
       s.SeriesView:("Series", "Named numerical series aligned to saved snapshots. Use keys/indexing and .info() to inspect coverage."),
       s.ConversionSeries:("Conversion", "Monomer and total conversion series aligned to saved snapshots."),
       s.PolymerCompositionSeries:("Polymer composition F", "Polymer composition: instantaneous, interval and cumulative series. Use .info() on each branch."),
-      s.StorageChains:("Chains", "Chain population data. Filter by activity/pool/origin, inspect columns, or calculate MWD, CLD and chain mass spectrum."),
+      s.StorageChains:("Chains", "Chain population data. Filter by activity/pool/origin, inspect columns, or calculate exact DP/mass counts, MWD and CLD."),
       s.StorageMomentsSeries:("Moments", "Time-dependent number-, weight- and z-average DP/molar-mass moments by population and mass model."),
       s.StorageMomentsSnapshot:("Moments", "Snapshot moments by population and mass model."),
       s.StorageChannelsSeries:("Channels", "Reaction-channel event data. Inspect event counts and shares by channel."),
@@ -109,16 +109,16 @@ Variables are available through run.var, run.var["name"].value, run.var.info() a
             setattr(cls,'info',_generic_info)
 
     # Every result/data package must expose info().
-    result_classes=[Distribution,ChainMassSpectrum,MassAuditResult]
+    result_classes=[ChainLengthDistribution,MolarMassDistribution,DPCounts,MassCounts,MassAuditResult]
     result_classes += [v for v in vars(c).values() if isinstance(v,type) and v.__module__==c.__name__]
     for cls in result_classes:
         if 'info' not in cls.__dict__:
             setattr(cls,'info',_generic_info)
 
     operation_groups={
-      s.StorageRun:['mwd','cld','chain_mass_spectrum','validate','mass_audit','summary'],
-      s.StorageSnapshot:['mwd','cld','chain_mass_spectrum','validate'],
-      s.StorageChains:['mwd','cld','chain_mass_spectrum','masses','select','where'],
+      s.StorageRun:['mwd','cld','dp_counts','mass_counts','validate','mass_audit','summary'],
+      s.StorageSnapshot:['mwd','cld','dp_counts','mass_counts','validate'],
+      s.StorageChains:['mwd','cld','dp_counts','mass_counts','masses','where'],
       a.StorageMicrostructure:['dyads','triads','run_lengths','transition_fraction','homodyad_fraction','blockiness','check_sequence_consistency'],
       a.StorageFirings:['channels','rows','final_row','final_fires','total_fires','channel_fires','delta_fires','fire_shares','rate_shares','validate'],
       a.StorageCopolymerization:['composition','monomer_composition','incremental_composition','cumulative_composition','polymer_composition','reactivity_ratios','mayo_lewis','compare_mayo_lewis','composition_drift','terminal_diagnostics','penultimate_parameters','penultimate_composition','compare_penultimate','penultimate_diagnostics'],

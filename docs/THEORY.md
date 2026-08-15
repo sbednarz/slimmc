@@ -422,78 +422,121 @@ $$
 Empty populations and zero mass denominators do not have meaningful ordinary
 moments. Callers must handle the documented unavailable/undefined result.
 
-## 9. CLD, MWD and chain-mass spectra
+## 9. Exact chain projections, CLD, MWD, and SEC
 
-### 9.1 Discrete sticks
+Let compressed chain record `r` have degree of polymerization `D_r`, neutral
+molar mass `M_r`, and multiplicity `N_r`.
 
-An exact stick distribution groups chains at a coordinate `x` and sums their
-weights. Common bases are:
+### 9.1 Exact count projections
 
-- number: `w_q=N_q`;
-- mass: `w_q=N_qM_q`;
-- z: `w_q=N_qM_q^2`.
+The exact DP-count projection is
 
-After normalization to unit sum,
+```text
+N_D(D) = sum_{r: D_r=D} N_r,
+```
 
-$$
-p_i=\frac{w_i}{\sum_jw_j}.
-$$
+and the exact mass-count projection is
 
-CLD normally uses `x=DP`; MWD uses `x=M`. A chain-mass spectrum retains exact
-discrete mass lines and may instead use base-peak normalization.
+```text
+N_M(M) = sum_{r: M_r=M} N_r.
+```
 
-### 9.2 Linear and logarithmic density
+These are returned by `dp_counts()` and `mass_counts()` and are not normalized.
+Because copolymers or different end groups can give different masses at the
+same DP, MWD must be projected independently onto actual `M_r`; it is not a
+transformation of aggregated CLD.
 
-Let `p(M)` be a density per unit mass. With
+### 9.2 Discrete CLD forms
 
-$$
-u=\log_{10}M,
-$$
+For unique DP classes `D_i` with counts `N_i`, number CLD is
 
-conservation of probability gives
+```text
+p_i = N_i / sum_j N_j.
+```
 
-$$
-p_u(u)=p(M)\frac{dM}{du}
-=p(M)\ln(10)M.
-$$
+Mass-weighted CLD uses the actual mass carried by each DP class,
 
-A plot against `log10(M)` must therefore distinguish a density per mass from a
-density per log-mass interval. Merely relabelling the x-axis changes neither
-the Jacobian nor the physical meaning.
+```text
+A_i = sum_{r: D_r=D_i} N_r M_r,
+w_i = A_i / sum_j A_j.
+```
 
-### 9.3 Histograms
+The z-weighted CLD is
 
-For bin `b` with width `Delta x_b`, a unit-area density is
+```text
+z_i = D_i^2 N_i / sum_j D_j^2 N_j.
+```
 
-$$
-y_b=\frac{W_b}{(\sum_cW_c)\Delta x_b}.
-$$
+The logarithmic CLD uses the same exact mass fractions as the mass form, but
+places them on `log10(D_i)` support.
 
-For equal bins in `log10(M)`, the width is `Delta log10(M)`. Histogram results
-depend on bin placement and width; moments should normally be evaluated from
-the exact population, not reverse-engineered from a coarse plotted histogram.
+### 9.3 Discrete MWD forms
 
-### 9.4 Gaussian and KDE representations
+For unique neutral masses `M_i` and exact counts `N_i`, number MWD is
 
-A Gaussian broadening of sticks has the form
+```text
+p_i = N_i / sum_j N_j,
+```
 
-$$
-y(x)=\sum_i w_i
-\frac{1}{\sigma\sqrt{2\pi}}
-\exp\left[-\frac{(x-x_i)^2}{2\sigma^2}\right].
-$$
+mass MWD is
 
-A Gaussian kernel-density estimate with bandwidth `h` is
+```text
+w_i = M_i N_i / sum_j M_j N_j,
+```
 
-$$
-\hat f_h(x)=\frac{1}{h\sum_iw_i}
-\sum_iw_iK\left(\frac{x-x_i}{h}\right),
-$$
+and z MWD is
 
-with standard-normal `K` in the current implementation. When smoothing is
-performed in log space, bandwidth is measured in that transformed coordinate.
-KDE is a visualization/representation model and does not add experimental
-information to a stochastic population.
+```text
+z_i = M_i^2 N_i / sum_j M_j^2 N_j.
+```
+
+The logarithmic MWD uses the same exact mass fractions `w_i` on support
+`u_i = log10(M_i)`.
+
+### 9.4 Continuous logarithmic density
+
+If a continuous mass density is written as `w(M) = dW/dM` and
+`u = log10(M)`, conservation of measure gives
+
+```text
+w(M) dM = g(u) du,
+g(u) = M ln(10) w(M).
+```
+
+The Jacobian belongs to a change of variables for continuous densities. Exact
+discrete atom weights are unchanged when their support is re-expressed in
+`log10(M)`.
+
+### 9.5 SEC instrumental broadening
+
+pyslimmc models Buback-style SEC broadening as a Gaussian response in
+`u = log10(M)` applied directly to exact mass fractions:
+
+```text
+S(u) = sum_i w_i /(sigma sqrt(2 pi))
+       * exp(-(u-u_i)^2/(2 sigma^2)).
+```
+
+Thus `S(u)` is a continuous apparent `dW_app/dlog10(M)` distribution and
+integrates analytically to unity. Under linear calibration
+`log10(M) = a - b v`, the public parameter `sigma_log10M` corresponds to
+`b sigma_v`.
+
+This is an instrumental response model, not generic smoothing. Histogram, KDE,
+and arbitrary Gaussian smoothing are not definitions of CLD/MWD in pyslimmc.
+
+### 9.6 Exact moments
+
+Mass moments are evaluated from exact source sums,
+
+```text
+Mn = sum N_i M_i / sum N_i,
+Mw = sum N_i M_i^2 / sum N_i M_i,
+Mz = sum N_i M_i^3 / sum N_i M_i^2,
+```
+
+with analogous DP moments. They are invariant with respect to distribution
+form and SEC broadening.
 
 ## 10. Conversion, rates and firing fractions
 
@@ -561,7 +604,7 @@ capability/completeness metadata.
   physical laws.
 - Stored sequences may be incomplete even when aggregate composition is exact.
 - Direct comparison with SEC/GPC requires accounting for calibration,
-  detector response and instrumental broadening; a KDE curve is not itself an
+  detector response and instrumental broadening; an arbitrary smoothed curve is not itself an
   SEC forward model.
 
 ## 13. Validation principles

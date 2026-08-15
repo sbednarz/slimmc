@@ -592,8 +592,8 @@ State and moments:
   run.temp / run.k / run.channels / run.firings / run.actions
 
 Chains and analyses:
-  run.chains / run.chain_counts() / run.mass_audit()
-  run.mwd.help(); run.cld.help(); run.chain_mass_spectrum.help()
+  run.chains / run.dp_counts() / run.mass_counts() / run.mass_audit()
+  run.mwd.help(); run.cld.help()
   run.copolymerization / run.microstructure
 
 Variables and diagnostics:

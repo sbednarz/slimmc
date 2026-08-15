@@ -87,7 +87,7 @@ def main() -> None:
         assert run.last.reason=="final" and run.last.has_sequences
         assert int(run.last.state.count[0])==50
         assert int(run.last.chains.dp[0])==8
-        assert float(run.last.moments.mn[0])==800.0
+        assert float(run.last.mn)==800.0
         assert int(run.last.channels.event_count[0])==30
         assert float(run.last.kinetics.value[0])==320.0
         try: run.first.chains

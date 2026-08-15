@@ -38,18 +38,23 @@ def main():
         root=Path(td)/'run'; root.mkdir(); build(root)
         run=pyslimmc.open(root); snap=run.last
         assert np.isnan(np.asarray(run.mn)[0]) and np.isclose(np.asarray(run.mn)[1],298.)
-        assert np.isclose(snap.mn,298.) and np.isclose(snap.moments.live.repeat_units.dp_n,2.)
-        assert np.isclose(np.asarray(run.moments.dead.with_end_groups.mw)[1],430.)
-        cld=snap.cld(method='sticks',basis='number',output='amount',normalization='absolute')
-        assert np.array_equal(cld.x,np.array([2.,4.])) and np.isclose(cld.y.sum(),5.)
-        mwd=snap.mwd(method='sticks',basis='number',coordinate='linear',output='amount',normalization='absolute')
-        assert np.array_equal(mwd.x,np.array([210.,430.])) and np.isclose(mwd.y.sum(),5.)
-        spec=snap.chain_mass_spectrum(normalize='count')
-        assert np.array_equal(spec.x,np.array([210.,430.])) and np.isclose(spec.y.sum(),5.)
-        assert np.array_equal(run.mwd(method='sticks',basis='number',coordinate='linear',output='amount',normalization='absolute').x,mwd.x)
-        multi=snap.mwd(series=('live','dead'),method='sticks',basis='number',coordinate='linear',output='amount',normalization='per_series')
-        assert set(multi.series)=={'live','dead'}
-    print('pyslimmc L2.5 moments/spectra: PASS')
+        assert np.isclose(snap.mn,298.) and np.isclose(snap.moments(population='live', mass_model='repeat_units').dpn,2.)
+        assert np.isclose(run.moments(snapshot='final', population='dead', mass_model='with_end_groups').mw,430.)
+
+        dp_counts=snap.dp_counts()
+        assert np.array_equal(dp_counts.dp,np.array([2,4])) and dp_counts.total_chains == 5
+        mass_counts=snap.mass_counts()
+        assert np.array_equal(mass_counts.mass,np.array([210.,430.])) and mass_counts.total_chains == 5
+
+        cld=snap.cld(form='number')
+        assert np.array_equal(cld.x,np.array([2.,4.])) and np.isclose(cld.y.sum(),1.)
+        mwd=snap.mwd(form='number')
+        assert np.array_equal(mwd.x,np.array([210.,430.])) and np.isclose(mwd.y.sum(),1.)
+        log_mwd=snap.mwd(form='log')
+        assert np.allclose(log_mwd.x,np.log10(mwd.x)) and np.allclose(log_mwd.y,snap.mwd(form='mass').y)
+        assert np.array_equal(run.mwd(form='number').x,mwd.x)
+        assert not hasattr(run,'chain_mass_spectrum')
+    print('pyslimmc L2.5 moments/distributions: PASS')
 
 def test_script_contract():
     main()

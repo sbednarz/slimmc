@@ -74,24 +74,18 @@ def test_mwd_contract_and_single_export(tmp_path: Path):
     td, root, run = _open_fixture()
     try:
         snap = run.final
-        with pytest.raises(ValueError):
-            snap.mwd(method="hist", basis="z")
-        with pytest.raises(TypeError):
-            snap.mwd(method="hist", dlogM=0.1)
-        with pytest.raises(ValueError):
-            snap.mwd(method="hist", coordinate="linear", bins=10, bin_width=100.0)
+        for kwargs in ({"method":"hist"}, {"basis":"mass"}, {"coordinate":"log10"},
+                       {"output":"density"}, {"bins":10}, {"bin_width":0.1},
+                       {"sigma":0.2}, {"grid_step":0.01}, {"normalization":"per_series"}):
+            with pytest.raises(TypeError):
+                snap.mwd(**kwargs)
 
-        linear = snap.mwd(method="hist", coordinate="linear", bin_width=100.0)
-        log = snap.mwd(method="hist", coordinate="log10", bin_width=0.1)
-        gaussian = snap.mwd(method="gaussian", coordinate="log10", bin_width=0.1, sigma=0.2)
-        kde = snap.mwd(method="kde", coordinate="log10", sigma=0.2)
-        assert linear.meta["bin_width"] == 100.0
-        assert log.meta["bin_width"] == 0.1
-        assert gaussian.method == "gaussian" and kde.method == "kde"
-        assert hasattr(linear, "to_tsv")
-        assert not hasattr(linear, "to_csv")
-        assert not hasattr(linear, "to_gnuplot")
-        out = linear.to_tsv(tmp_path / "mwd.tsv")
+        dist = snap.mwd(form="mass")
+        assert np.isclose(dist.y.sum(), 1.0)
+        assert hasattr(dist, "to_tsv")
+        assert not hasattr(dist, "to_csv")
+        assert not hasattr(dist, "to_gnuplot")
+        out = dist.to_tsv(tmp_path / "mwd.tsv")
         assert out.is_file()
         header = next(line for line in out.read_text().splitlines() if not line.startswith("#"))
         assert "\t" in header

@@ -25,37 +25,50 @@ def test_snapshot_contract_first_last_final():
         td.cleanup()
 
 
-def test_analysis_help_before_call(capsys):
+def test_distribution_help_before_call(capsys):
     td, run = _run()
     try:
         assert "Molar-mass distribution" in run.mwd.help()
         assert "Chain-length distribution" in run.cld.help()
-        assert "Neutral chain-mass spectrum" in run.chain_mass_spectrum.help()
-        assert "Molar-mass distribution" in capsys.readouterr().out
+        assert not hasattr(run, "chain_mass_spectrum")
+        out = capsys.readouterr().out
+        assert "exact and discrete" in out
     finally:
         td.cleanup()
 
 
-def test_distribution_v3_properties_and_info():
+def test_new_distribution_properties_and_removed_legacy_api():
     td, run = _run()
     try:
-        mwd = run.mwd(method="hist", coordinate="log10", bin_width=0.1)
-        assert np.allclose(mwd.log10_x, np.log10(mwd.x))
+        mwd = run.mwd(form="log")
+        assert np.allclose(mwd.x, np.log10(mwd.mass))
         assert isinstance(mwd.mn, float)
         assert isinstance(mwd.dispersity, float)
-        assert "Molar mass distribution" in mwd.info_text()
-        assert "metadata" in mwd.as_dict()
+        assert mwd.form == "log"
+        assert mwd.metadata["representation"] == "discrete"
         assert not hasattr(mwd, "pdi")
+        assert not hasattr(mwd, "method")
+        assert not hasattr(mwd, "basis")
+        assert not hasattr(mwd, "coordinate")
+        assert not hasattr(mwd, "output")
 
-        cld = run.cld(method="sticks")
-        assert cld.dp_n == cld.mn
-        assert cld.dp_w == cld.mw
-        assert "Chain length distribution" in cld.info_text()
+        cld = run.cld(form="number")
+        assert np.array_equal(cld.x, cld.dp)
+        assert np.isclose(cld.y.sum(), 1.0)
+        assert hasattr(cld, "dpn") and hasattr(cld, "dpw") and hasattr(cld, "dpz")
+        assert not hasattr(cld, "mn") and not hasattr(cld, "mw") and not hasattr(cld, "mz")
 
-        spectrum = run.chain_mass_spectrum(normalize="base_peak")
-        assert np.array_equal(spectrum.mass, spectrum.x)
-        assert spectrum.base_peak_intensity == pytest.approx(1.0)
-        assert "not an m/z spectrum" in spectrum.info_text()
-        assert not hasattr(run, "chain_spectrum")
+        for kwargs in (
+            {"method": "hist"},
+            {"basis": "mass"},
+            {"coordinate": "log10"},
+            {"output": "density"},
+            {"bin_width": 0.1},
+            {"sigma": 0.05},
+            {"grid_step": 0.01},
+            {"normalization": "per_series"},
+        ):
+            with pytest.raises(TypeError):
+                run.mwd(**kwargs)
     finally:
         td.cleanup()

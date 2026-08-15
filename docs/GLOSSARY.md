@@ -415,28 +415,37 @@ One stored record representing many chemically identical chains. Its
 Number of physical polymer molecules represented by one compressed row. It is
 the basic number weight used in chain-population sums.
 
-### Chain counts
+### DP counts
 
-Exact aggregation of chain abundance by DP or another discrete chain key. In
-the `ChainPopulation` API, per-monomer `counts` instead mean repeat-unit counts
-inside each distinct chain, so context matters.
+Exact aggregation of compressed-chain multiplicity by degree of polymerization.
+`dp_counts()` returns the discrete source projection `DP -> N` without
+normalization.
+
+### Mass counts
+
+Exact aggregation by neutral chain molar mass. `mass_counts()` returns
+`M -> N`. In copolymers, the same DP can contribute to several different
+masses.
 
 ### Chain-length distribution (CLD)
 
-Distribution along degree of polymerization. Reported with a basis-aware
-descriptor: `N` (number-weighted, `basis="number"`), `W` (mass-weighted,
-`basis="mass"`) — e.g.
-`dN/dDP`, `dW/dlog10(DP)`. `W` weights chain lengths by actual chain mass
-and emphasizes heavier molecules; `Z` emphasizes the high-mass tail further
-still.
+Normalized discrete distribution on degree of polymerization. `form` is one of
+`number`, `mass`, `z`, or `log`. Mass CLD weights each DP class by the actual
+polymer mass carried by chains in that class; logarithmic CLD uses those exact
+mass fractions on `log10(DP)` support.
 
 ### Molar-mass distribution (MWD)
 
-Distribution along chain molar mass. Uses the same `N`/`W`/`Z` basis
-symbols as CLD above -- number, mass and mass-squared weighting
-respectively -- e.g. `dW/dlog10(M)` for the default mass-basis, log10
-density (matching Chen et al., Ind. Eng. Chem. Res. 2025, 64, 3695-3703,
-eq. 8).
+Normalized discrete distribution on actual neutral chain molar mass. `number`
+weights by chain count, `mass` by `N M`, `z` by `N M^2`, and `log` places the
+exact mass fractions on `log10(M)` support. Exact MWD is not a histogram, KDE,
+or smoothed detector trace.
+
+### SEC distribution
+
+Continuous apparent mass distribution produced by Gaussian instrumental
+broadening in `log10(M)`. Unlike exact `mwd(form="log")`, its ordinate is a
+continuous density `dW_app/dlog10(M)`.
 
 ### Chain-mass spectrum
 

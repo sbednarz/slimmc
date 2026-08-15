@@ -36,8 +36,8 @@ run = sl.open("results/run_000001")
 | get moment series | `run.mn`, `run.mw`, `run.mz`, `run.dispersity` |
 | build an MWD | `run.mwd()` |
 | build a CLD | `run.cld()` |
-| build a neutral chain-mass spectrum | `run.chain_mass_spectrum()` |
-| compare live/dead chains | `run.final.mwd(series=("live", "dead"))` |
+| inspect exact DP/mass counts | `run.dp_counts()` / `run.mass_counts()` |
+| compare live/dead chains | `run.mwd_series(series=("live", "dead"))` |
 | inspect copolymer composition | `run.f`, `run.F` |
 | calculate dyads/triads/blocks | `run.microstructure` |
 | inspect channel competition | `run.firings.fire_shares()`; `.rate_shares()` currently requires copo `channel_propensities` |
@@ -242,153 +242,201 @@ chains.masses(mass_model="with_end_groups")
 
 ## Exact moments
 
+Simple run-level moments remain available:
+
 ```python
 run.dpn
 run.dpw
 run.mn
 run.mw
 run.mz
-run.dispersity
-
-run.moments.all
-run.moments.live
-run.moments.dead
-run.moments.select(population_scope="dead", mass_basis="repeat_units")
+run.dispersity       # Mw / Mn
+run.dp_dispersity    # DPw / DPn
 ```
 
-Moments are calculated from the exact discrete/compressed chain population.
-They do not depend on how an MWD/CLD is subsequently binned or smoothed.
-
-## MWD: recommended plotting workflow
-
-The default MWD is mass-weighted, Gaussian-smoothed and constructed in
-`log10(M)` coordinates:
+For an explicitly selected population and mass model:
 
 ```python
-mwd = run.mwd()
+m = run.moments(
+    snapshot="final",
+    population="dead",
+    mass_model="repeat_units",
+)
 
+m.dpn
+m.dpw
+m.dpz
+m.mn
+m.mw
+m.mz
+m.dp_dispersity
+m.mass_dispersity
+```
+
+The fully general path is through a selected `ChainPopulation`:
+
+```python
+m = run.final.chains.dead.moments(mass_model="repeat_units")
+```
+
+Moments are calculated from exact source-chain information or stored aggregate
+moments. They are never recomputed from plotted CLD/MWD/SEC curves. `dpz` is
+`NaN` when only an older aggregate moments table is available and the required
+third DP moment was not stored.
+
+## Exact DP and mass counts
+
+Exact source projections are separate from normalized distributions:
+
+```python
+dp = run.dp_counts(pool="dead")
+print(dp.dp)
+print(dp.count)
+
+mass = run.mass_counts(pool="dead")
+print(mass.mass)
+print(mass.count)
+```
+
+`DPCounts` represents exact `DP -> chain count`; `MassCounts` represents exact
+neutral molar mass `M -> chain count`. They are unnormalized source-of-truth
+projections and expose semantic properties (`dp`/`mass`, `count`) rather than
+generic `x`/`y` aliases.
+
+For copolymers or end-group-aware masses, several different masses may occur at
+the same DP. Therefore general MWD is built independently from actual chain
+masses, not by transforming an already aggregated CLD.
+
+## CLD and MWD forms
+
+The distribution API uses one literature-oriented keyword:
+
+```python
+form="number" | "mass" | "z" | "log"
+```
+
+Defaults are:
+
+```python
+cld = run.cld()   # form="number"
+mwd = run.mwd()   # form="log"
+```
+
+All CLD/MWD results are exact **discrete** normalized distributions. There is no
+histogram, KDE, generic Gaussian smoothing, midpoint construction, or generic
+`interpolate=` step in the core API.
+
+For CLD:
+
+```python
+run.cld(form="number")
+run.cld(form="mass")
+run.cld(form="z")
+run.cld(form="log")
+```
+
+For MWD:
+
+```python
+run.mwd(form="number")
+run.mwd(form="mass")
+run.mwd(form="z")
+run.mwd(form="log")
+```
+
+`form="mass"` CLD accumulates the **actual chain mass** carried by each DP
+class. It is not generally equal to weighting by `DP * count` for copolymers.
+
+For exact logarithmic forms, the support is transformed but atomic weights are
+unchanged:
+
+```python
+m_mass = run.mwd(form="mass")
+m_log = run.mwd(form="log")
+
+# same exact mass fractions
+# m_log.x == log10(m_mass.mass)
+# m_log.y == m_mass.y
+```
+
+Thus `mwd(form="log")` is a discrete mass-weighted distribution on
+`log10(M)` support. It should not be confused with a finite continuous density.
+Changing a Matplotlib axis with `plt.xscale("log")` is only a display choice and
+does not change the mathematical distribution.
+
+Distribution moments remain exact source moments for every form:
+
+```python
+mwd = run.mwd(form="log")
 mwd.mn
 mwd.mw
 mwd.mz
 mwd.dispersity
-mwd.x         # physical molar mass, g/mol
-mwd.log10_x   # log10(mwd.x)
-mwd.y
-mwd.metadata["descriptor"]
-```
 
-For a publication-style physical mass axis while retaining a density built in
-`log10(M)`:
-
-```python
-import matplotlib.pyplot as plt
-
-mwd = run.mwd(coordinate="log10", output="density")
-plt.plot(mwd.x, mwd.y)
-plt.xscale("log")
-plt.xlabel("Molar mass, g mol$^{-1}$")
-plt.ylabel(mwd.metadata["descriptor"])
-plt.tight_layout()
-plt.show()
-```
-
-The log x scale above is only the display scale. The important analytical
-choice was already made by `coordinate="log10"` when the distribution was
-constructed.
-
-If instead you want an explicitly `log10(M)` x coordinate:
-
-```python
-plt.plot(mwd.log10_x, mwd.y)
-plt.xlabel("log$_{10}$(M / g mol$^{-1}$)")
-```
-
-### Methods
-
-```text
-sticks     exact discrete support
-hist       histogram without smoothing
-gaussian   smoothed histogram (default MWD representation)
-kde        kernel density estimate
-```
-
-KDE may extend tails beyond the observed chain-mass range. Gaussian broadening
-uses histogram support and is therefore the default visualization for MWD.
-Neither smoothing choice changes the exact moments.
-
-## CLD
-
-The default CLD is number-based, discrete sticks in linear DP:
-
-```python
-cld = run.cld()
-cld.x
-cld.y
+cld = run.cld(form="mass")
 cld.dpn
 cld.dpw
 cld.dpz
+cld.dispersity
 ```
 
-A histogram or mass-weighted CLD is explicit:
+CLD intentionally does not expose misleading `mn`/`mw`/`mz` aliases.
+
+## Multi-series distributions
+
+Multi-series comparison is a separate composition layer:
 
 ```python
-run.cld(method="hist", basis="number")
-run.cld(method="hist", basis="mass")
+g = run.mwd_series(
+    series=("live", "dead"),
+    form="log",
+    normalization="per_series",
+)
 ```
 
-## Basis, coordinate, output, and normalization
-
-These parameters change the **mathematical distribution**, not only its plot:
+Accepted normalizations are only:
 
 ```text
-basis:          number | mass
-coordinate:     linear | log10
-output:         amount | fraction | density
-normalization:  absolute | per_series | combined | reference
+per_series
+combined
 ```
 
-Important examples:
+`per_series` normalizes every series independently to 1 and is intended for
+shape comparison. `combined` preserves relative physical contributions using
+exact source totals appropriate to the selected form and requires pairwise-
+disjoint populations; for example `live + dead` is valid, while `all + dead`
+is rejected.
 
-- `basis="number"` asks how chains are distributed by count;
-- `basis="mass"` asks how polymer mass is distributed;
-- `coordinate="log10"` builds the distribution with respect to log10 of the
-  coordinate;
-- `output="density"` divides by coordinate width;
-- `normalization="per_series"` independently normalizes each displayed series.
+Each series keeps its own exact support. pyslimmc does not construct a common
+grid, interpolate between supports, or insert synthetic bins.
 
-For multiple populations:
+## SEC broadening
+
+Experimental SEC broadening is intentionally separate from MWD:
 
 ```python
-mwd = run.mwd(series=("live", "dead"), normalization="per_series")
+sec = run.sec(
+    pool="dead",
+    sigma_log10M=0.05,
+)
 ```
 
-`combined` is accepted only for pairwise-disjoint populations. `reference`
-requires a named reference series.
+The model applies a normalized Gaussian instrumental response in
+`u = log10(M)` directly to exact source mass fractions:
 
-For the conceptual distinction, see [`CONCEPTS.md`](CONCEPTS.md).
-
-## Neutral chain-mass spectrum
-
-```python
-spectrum = run.chain_mass_spectrum()  # normalize="count" by default
-
-spectrum.mass
-spectrum.intensity
-spectrum.base_peak_mass
-spectrum.base_peak_intensity
+```text
+S(u) = sum_i w_i G_sigma(u - log10(M_i))
 ```
 
-Explicit display normalizations:
+`sec.y` is therefore a genuine continuous apparent density
+`dW_app / dlog10(M)`, unlike the atomic weights returned by discrete
+`mwd(form="log")`.
 
-```python
-run.chain_mass_spectrum(normalize="count")
-run.chain_mass_spectrum(normalize="fraction")
-run.chain_mass_spectrum(normalize="base_peak")
-```
-
-This is a neutral-chain mass spectrum, **not m/z**. Charge states, isotopes,
-adducts, fragmentation, ionization efficiency and detector response are not
-modelled.
+`sigma_log10M` is required because it is an instrumental/model parameter; no
+silent default is assumed. `step_log10M=` may be supplied to control numerical
+sampling of the output curve. Exact `Mn`, `Mw`, `Mz`, and dispersity attached
+to the SEC result still come from the source chain population and do not depend
+on broadening or grid spacing.
 
 ## Microstructure
 

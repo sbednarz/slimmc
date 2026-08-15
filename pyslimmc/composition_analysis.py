@@ -328,12 +328,12 @@ class RunPlotNamespace:
         plot = self._split_plot_kwargs(kwargs)
         return self._run.cld(snapshot=snapshot, **kwargs).plot(**plot)
 
-    def chain_mass_spectrum(self, *, snapshot="final", **kwargs):
-        plot = self._split_plot_kwargs(kwargs)
-        return self._run.chain_mass_spectrum(snapshot=snapshot, **kwargs).plot(**plot)
 
-    def chain_counts(self, *, snapshot="final", pool="all", grouping="dp", **plot_kwargs):
-        return self._run.chain_counts(snapshot=snapshot, pool=pool, grouping=grouping).plot(**plot_kwargs)
+    def dp_counts(self, *, snapshot="final", pool="all", **plot_kwargs):
+        return self._run.dp_counts(snapshot=snapshot, pool=pool).plot(**plot_kwargs)
+
+    def mass_counts(self, *, snapshot="final", pool="all", mass_model=None, **plot_kwargs):
+        return self._run.mass_counts(snapshot=snapshot, pool=pool, mass_model=mass_model).plot(**plot_kwargs)
 
     # General run series ------------------------------------------------------
     def conversion(self, *, x="time", monomers=None, total=True, **plot_kwargs):

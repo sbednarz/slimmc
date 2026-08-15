@@ -5,7 +5,7 @@ import math, tables
 
 const
   AppName* = "slimmc-copo"
-  SlimmcVersion* {.strdefine.} = "5.0.1"
+  SlimmcVersion* {.strdefine.} = "5.0.2"
   AppVersion* = SlimmcVersion
   NA* = 6.02214076e23
   Rgas* = 8.31446261815324

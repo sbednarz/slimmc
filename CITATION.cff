@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use the slimmc family, please cite the software and the component versions used."
 title: "slimmc: stochastic kinetic Monte Carlo simulation and analysis for polymerization"
 type: software
-version: "5.0.1"
+version: "5.0.2"
 abstract: >-
   Independent Nim implementation developed from an original pre-generative-AI
   homopolymer/PLP simulator by Szczepan Bednarz. Subsequent development,

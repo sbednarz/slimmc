@@ -151,7 +151,7 @@ run = sl.open("results/styrene")
 print(run.status)
 print(run.conv["Sty"][-1])
 
-mwd = run.final.mwd(method="gaussian", coordinate="log10", basis="mass")
+mwd = run.final.mwd(form="log")
 plt.plot(mwd.x, mwd.y)
 plt.xscale("log")
 plt.xlabel("Molar mass, g/mol")

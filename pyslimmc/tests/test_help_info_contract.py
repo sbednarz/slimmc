@@ -30,7 +30,7 @@ def test_major_operations_have_pre_use_help():
     import pyslimmc.storage_analysis as a
     import pyslimmc.runs as r
     checks=[
-      (s.StorageRun,['mwd','cld','chain_mass_spectrum','validate','mass_audit','summary']),
+      (s.StorageRun,['mwd','cld','dp_counts','mass_counts','validate','mass_audit','summary']),
       (a.StorageCopolymerization,['mayo_lewis','reactivity_ratios','penultimate_parameters']),
       (a.StorageMicrostructure,['dyads','triads','blockiness']),
       (a.StorageFirings,['fire_shares','rate_shares']),
