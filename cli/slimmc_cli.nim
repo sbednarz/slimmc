@@ -47,9 +47,7 @@ import ../common/build_provenance
 
 const AppName = "slimmc"
 const
-  CliVersion {.strdefine.} = "5.0.2"
-  PyslimmcVersion {.strdefine.} = "5.0.1"
-  PyslimmcOptVersion {.strdefine.} = "1.0.0"
+  CliVersion {.strdefine.} = "5.0.3"
 
 proc fail(msg: string) =
   stderr.writeLine("ERROR: " & msg)
@@ -57,8 +55,6 @@ proc fail(msg: string) =
 
 proc printVersions() =
   echo "Slimmc " & CliVersion
-  echo "pyslimmc " & PyslimmcVersion
-  echo "pyslimmc-opt " & PyslimmcOptVersion
 
 proc buildMode(): string =
   when defined(release): "release"

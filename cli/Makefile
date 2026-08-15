@@ -19,9 +19,7 @@ BUILD_TIMESTAMP_UTC ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 PROVENANCE_DEFINES = $(if $(BUILD_GIT_COMMIT),-d:BuildGitCommit=$(BUILD_GIT_COMMIT),) $(if $(BUILD_GIT_TAG),-d:BuildGitTag=$(BUILD_GIT_TAG),) -d:BuildGitDirty=$(BUILD_GIT_DIRTY) -d:BuildTimestampUtc=$(BUILD_TIMESTAMP_UTC)
 NIMCACHE ?= nimcache
 CLI_VERSION ?= $(shell sed -n '1p' ../VERSION)
-PYSLIMMC_VERSION ?= $(shell sed -n 's/^__version__ = "\([^"]*\)"/\1/p' ../pyslimmc/_version.py)
-PYSLIMMC_OPT_VERSION ?= $(shell sed -n 's/^__version__ = "\([^"]*\)"/\1/p' ../pyslimmc_opt/__init__.py)
-VERSION_DEFINES = -d:CliVersion=$(CLI_VERSION) -d:SlimmcVersion=$(CLI_VERSION) -d:PyslimmcVersion=$(PYSLIMMC_VERSION) -d:PyslimmcOptVersion=$(PYSLIMMC_OPT_VERSION)
+VERSION_DEFINES = -d:CliVersion=$(CLI_VERSION) -d:SlimmcVersion=$(CLI_VERSION)
 
 .PHONY: all help build summary debug test check-all clean
 
