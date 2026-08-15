@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 
 from .core import InvalidOutputError
-from .operations import analysis_operation, MWD_HELP, CLD_HELP, SPECTRUM_HELP
+from .operations import analysis_operation, MWD_HELP, CLD_HELP, SEC_HELP
 
 
 def _readonly(values, *, dtype=None) -> np.ndarray:
@@ -132,6 +132,21 @@ class ChainRow(Mapping[str, Any]):
         raise AttributeError(name)
 
 
+def _select_population(population, pool: str):
+    if not isinstance(pool, str):
+        raise TypeError("pool must be a string")
+    if pool == "all":
+        value = population.all
+        return value() if callable(value) else value
+    if pool in {"live", "active"}:
+        value = population.live
+        return value() if callable(value) else value
+    if pool == "dead":
+        value = population.dead
+        return value() if callable(value) else value
+    return population.pool(pool)
+
+
 class ChainPopulation:
     """Shared read-only contract for one exact saved chain population.
 
@@ -201,65 +216,64 @@ class ChainPopulation:
     def all(self) -> "ChainPopulation":
         return self
 
+    def dp_counts(self):
+        """Exact chain counts grouped by degree of polymerization."""
+        from .counts import DPCounts
+        return DPCounts.from_population(self)
+
+    def mass_counts(self, *, mass_model: str | None = None):
+        """Exact chain counts grouped by neutral chain molar mass."""
+        from .mass_model import record_masses
+        masses, model = record_masses(self, mass_model)
+        from .counts import MassCounts
+        return MassCounts.from_population(self, masses, mass_model=model)
+
+    def moments(self, *, mass_model: str | None = None):
+        """Exact DP and molar-mass moments of this selected population."""
+        from .moments import calculate_population_moments
+        return calculate_population_moments(self, mass_model=mass_model)
+
     @analysis_operation(CLD_HELP)
-    def cld(self, *, mass_model: str | None = None, series=None, **kwargs):
-        """Build a CLD directly from this exact population snapshot."""
-        if series is not None:
-            from .spectra import build_cld_series
-            return build_cld_series(self, series=series, mass_model=mass_model, **kwargs)
-        kwargs.pop("reference", None)
-        basis = str(kwargs.get("basis", "number")).lower()
-        masses = None
-        if basis in {"mass", "weight"}:
-            raw = self._raw_arrays()
-            if "mass" in raw:
-                masses = raw["mass"]
-            else:
-                calculator = getattr(self, "masses", None)
-                if calculator is None:
-                    raise InvalidOutputError("mass-basis CLD requires per-chain molar masses")
-                masses = calculator(mass_model=mass_model or "repeat_units")
-        from .spectra import build_cld
-        return build_cld(self, masses=masses, mass_model=mass_model, **kwargs)
+    def cld(self, *, form: str = "number", mass_model: str | None = None):
+        """Build an exact discrete CLD for this already-selected population."""
+        from .distributions import build_cld
+        return build_cld(self, form=form, mass_model=mass_model)
 
     @analysis_operation(MWD_HELP)
-    def mwd(self, *, mass_model: str | None = None, series=None, **kwargs):
-        """Build an MWD directly from this exact population snapshot.
+    def mwd(self, *, form: str = "log", mass_model: str | None = None):
+        """Build an exact discrete MWD for this already-selected population."""
+        from .distributions import build_mwd
+        return build_mwd(self, form=form, mass_model=mass_model)
 
-        Copolymer snapshots carry engine-computed per-chain masses.  Classic
-        snapshots compute them from the selected mass model.
-        """
-        if series is not None:
-            from .spectra import build_mwd_series
-            return build_mwd_series(self, series=series, mass_model=mass_model, **kwargs)
-        kwargs.pop("reference", None)
-        raw = self._raw_arrays()
-        if "mass" in raw:
-            masses = raw["mass"]
-        else:
-            calculator = getattr(self, "masses", None)
-            if calculator is None:
-                raise InvalidOutputError("chain population has no molar-mass data")
-            masses = calculator(mass_model=mass_model or "repeat_units")
-        from .spectra import build_mwd
-        return build_mwd(self, masses, mass_model=mass_model, **kwargs)
+    def cld_series(self, *, series, form: str = "number",
+                   normalization: str = "per_series", mass_model: str | None = None):
+        """Compare named CLDs without changing their exact supports."""
+        from .distributions import build_cld_series
+        return build_cld_series(
+            self, series=series, form=form, normalization=normalization,
+            mass_model=mass_model,
+        )
 
-    @analysis_operation(SPECTRUM_HELP)
-    def chain_mass_spectrum(self, *, mass_model: str | None = None, series=None, normalize: str = "count", **kwargs):
-        """Exact neutral-chain mass spectrum (not m/z or ionization)."""
-        if series is not None:
-            from .spectra import build_chain_mass_spectrum_series
-            return build_chain_mass_spectrum_series(self, series=series, mass_model=mass_model, normalize=normalize, **kwargs)
-        raw = self._raw_arrays()
-        if "mass" in raw:
-            masses = raw["mass"]
-        else:
-            calculator = getattr(self, "masses", None)
-            if calculator is None:
-                raise InvalidOutputError("chain population has no molar-mass data")
-            masses = calculator(mass_model=mass_model or "repeat_units")
-        from .spectra import build_chain_mass_spectrum
-        return build_chain_mass_spectrum(self, masses, mass_model=mass_model, normalize=normalize, **kwargs)
+    def mwd_series(self, *, series, form: str = "log",
+                   normalization: str = "per_series", mass_model: str | None = None):
+        """Compare named MWDs without changing their exact supports."""
+        from .distributions import build_mwd_series
+        return build_mwd_series(
+            self, series=series, form=form, normalization=normalization,
+            mass_model=mass_model,
+        )
+
+    @analysis_operation(SEC_HELP)
+    def sec(
+        self, *, sigma_log10M: float, mass_model: str | None = None,
+        step_log10M: float | None = None
+    ):
+        """Apply a Gaussian SEC response to this already-selected population."""
+        from .sec import build_sec
+        return build_sec(
+            self, sigma_log10M=sigma_log10M, mass_model=mass_model,
+            step_log10M=step_log10M,
+        )
 
     def row(self, index: int) -> ChainRow:
         if not isinstance(index, int) or isinstance(index, bool):

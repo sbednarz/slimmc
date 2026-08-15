@@ -48,7 +48,7 @@ def help() -> str:
         "  run.info(); snap = run.final\n"
         "  run.t; run.conc[\"A\"]; run.conv[\"A\"]; run.conv.total\n"
         "  run.mn; run.mw; run.dispersity; run.temp; run.k\n"
-        "  snap.chains; snap.mwd(); snap.cld(); snap.chain_mass_spectrum()\n"
+        "  snap.chains; snap.dp_counts(); snap.mass_counts(); snap.mwd(); snap.cld(); snap.sec(sigma_log10M=0.05)\n"
         "  run.channels; run.firings; run.actions; run.kinetics\n"
         "  run.copolymerization; run.microstructure\n"
         "  run.validate(strict=True); run.mass_audit()\n"

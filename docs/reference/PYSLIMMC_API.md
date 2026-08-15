@@ -1,4 +1,4 @@
-# pyslimmc 4.0.0 public API
+# pyslimmc 5.0.0 public API
 
 This is the canonical public reference for the read-only Python interface to
 Slimmc Storage 1.2.0. It documents supported names rather than implementation
@@ -296,12 +296,13 @@ chains.where_count("A", min=10, max=30)
 chains.where_fraction("A", min=0.4, max=0.6)
 chains.where_component_count(min=2, max=2)
 chains.where_components(("A", "B"), exact=True)
-chains.select(pool="dead")
+chains.dead
+chains.pool("P_A")
 ```
 
-`select(pool=...)` accepts `all`, `live`, `dead`, or a kinetic pool name and is
-the general pool selector. `population_activity()`, `pool()`, and `origin()`
-are explicit convenience selectors. `at_snapshot()` selects the chain block
+Population activity and kinetic pool are intentionally separate concepts:
+use `chains.live` / `chains.dead` for activity and `chains.pool(name)` for a
+kinetic pool. `at_snapshot()` selects the chain block
 for a chain-bearing snapshot; `last` selects the last such block.
 
 Composition analyses:
@@ -344,85 +345,96 @@ All aggregations use compressed-row multiplicity. Expensive full-sequence
 methods accept `progress=None|True|False`; global defaults are controlled by
 `pyslimmc.options`.
 
-## Moments, distributions, and spectra
+## Moments, exact counts, distributions, and SEC
+
+Simple moment series remain directly available:
 
 ```python
-run.moments.all
-run.moments.live
-run.moments.dead
-run.moments.select(population_scope="dead", mass_basis="repeat_units")
-run.moments.default
-
 run.dpn
 run.dpw
+run.dp_dispersity
 run.mn
 run.mw
 run.mz
 run.dispersity
 ```
 
-Run-level analyses default to `snapshot="final"`; pass `"last"`, a snapshot
-ID, or a `Snapshot` explicitly when required:
+Explicit population moments use one callable:
 
 ```python
-mwd = run.mwd(snapshot="final", basis="mass", method="gaussian",
-              coordinate="log10", bin_width=0.01, sigma=0.04)
-cld = run.cld(snapshot="final", basis="number", method="hist")
-spectrum = run.chain_mass_spectrum(snapshot="final", normalize="count")
-counts = run.chain_counts(snapshot="final", pool="all", grouping="dp")
+m = run.moments(snapshot="final", population="dead", mass_model="repeat_units")
 ```
 
-The complete distribution parameter surface is:
+`PopulationMoments` exposes `dpn`, `dpw`, `dpz`, `mn`, `mw`, `mz`,
+`dp_dispersity`, `mass_dispersity`, `total_chains`, `mass_model`, `source`, and
+`has_dpz`. Exact moments come from source chains or stored aggregate moments,
+never from displayed curves.
+
+Exact unnormalized source projections are:
 
 ```python
-run.mwd(snapshot="final", pool="all", series=None,
-        mass_model=None, basis="mass", method="gaussian",
-        coordinate="log10", output="density",
-        normalization="per_series", bins=None, bin_width=None,
-        sigma=None, grid_step=None, reference=None)
-
-run.cld(snapshot="final", pool="all", series=None,
-        mass_model=None, basis="number", method="sticks",
-        coordinate="linear", output="fraction",
-        normalization="per_series", bins=None, bin_width=None,
-        sigma=None, grid_step=None, reference=None)
-
-run.chain_mass_spectrum(snapshot="final", pool="all", series=None,
-                        mass_model=None, normalize="count")
+dp = run.dp_counts(snapshot="final", pool="dead")
+mass = run.mass_counts(snapshot="final", pool="dead", mass_model=None)
 ```
 
-For one distribution, `series=None`; a mapping of series names to chain
-populations requests a common-grid result. `pool` and `series` are mutually
-exclusive except for `pool="all"`. `reference` names the reference series and
-is used only with `normalization="reference"`. `bins` and `bin_width` are
-mutually exclusive. `sigma` and `grid_step` are expressed in the selected
-coordinate. Exact accepted values and defaults are tabulated in
-[`PYSLIMMC_SIGNATURES.md`](PYSLIMMC_SIGNATURES.md).
+`DPCounts` exposes `dp`, `count`, `total_chains`, `total_repeat_units`,
+`min_dp`, `max_dp`, `to_tsv()`, and `plot()`. `MassCounts` exposes `mass`,
+`count`, `total_chains`, `min_mass`, `max_mass`, `mass_model`, `to_tsv()`, and
+`plot()`. These objects intentionally do not provide generic `x`/`y` aliases.
 
-`ChainCounts` exposes `x`, `y`, `total_chains`, `total_repeat_units`, `min_dp`,
-`max_dp`, `as_table()`, `to_tsv()`, and `plot()`. A chain-mass spectrum also
-exposes `mass`, `intensity`, `base_peak_mass`, and `base_peak_intensity`.
+Single-population normalized distributions are:
 
-Distributions support:
-
-```text
-basis: number | mass
-method: sticks | hist | gaussian | kde
-coordinate: linear | log10
-output: amount | fraction | density
-normalization: absolute | per_series | combined | reference
+```python
+mwd = run.mwd(snapshot="final", pool="dead", form="log", mass_model=None)
+cld = run.cld(snapshot="final", pool="dead", form="number", mass_model=None)
 ```
 
-`mn`, `mw`, `mz`, and dispersity exposed by an MWD object are calculated from
-the discrete compressed chain population. The plotted `x`/`y` arrays may be
-binned or smoothed (`hist`, `gaussian`, `kde`) and therefore are a visualization
-representation, not an alternative source for recomputing the exact moments.
+Accepted forms are `number`, `mass`, `z`, and `log`. MWD defaults to `log`; CLD
+defaults to `number`. Results are exact discrete distributions. There are no
+public `basis`, `method`, `coordinate`, `output`, histogram, KDE, generic
+Gaussian, bin-width, or interpolation controls.
 
-`bins` and `bin_width` are mutually exclusive. Exact moments come from source
-chains, not the displayed representation. Distribution objects expose `x`,
-`y`, `n`, `total_weight`, `mn`, `mw`, `mz`, `dispersity` (and DP equivalents
-for CLD), `as_table()`, `as_dict()`, `to_tsv()`, `plot()`, `info()`, and
-`help()`.
+`MolarMassDistribution` exposes `x`, `y`, `mass`, `form`, `mass_model`, exact
+`mn`, `mw`, `mz`, `dispersity`, source metadata, export, plot, `info()`, and
+`help()`. `ChainLengthDistribution` analogously exposes `x`, `y`, `dp`, `form`,
+`dpn`, `dpw`, `dpz`, and DP dispersity; it intentionally has no `mn`/`mw`/`mz`
+aliases.
+
+For `form="log"`, `x` is `log10(DP)` or `log10(M)`, while `dp`/`mass` retain
+physical support. Atomic weights are unchanged from the mass form; the result
+is a discrete measure, not a finite continuous density.
+
+Multi-series composition is explicit:
+
+```python
+g = run.mwd_series(
+    snapshot="final",
+    series=("live", "dead"),
+    form="log",
+    normalization="per_series",
+)
+```
+
+and likewise `cld_series()`. Only `per_series` and `combined` are accepted.
+`combined` uses exact form-dependent source totals and requires pairwise-
+disjoint populations. Each member retains its own exact support; no common
+interpolation grid is created.
+
+SEC instrumental broadening is separate:
+
+```python
+sec = run.sec(
+    snapshot="final",
+    pool="dead",
+    sigma_log10M=0.05,
+    mass_model=None,
+    step_log10M=None,
+)
+```
+
+`SECDistribution.y` is the continuous apparent density
+`dW_app/dlog10(M)`. `sigma_log10M` is required. Exact source `mn`, `mw`, `mz`,
+and dispersity remain attached to the result and are independent of broadening.
 
 ## Channels, firings, kinetics, and actions
 
@@ -520,8 +532,8 @@ run.plot.temperature()
 run.plot.volume()
 run.plot.mwd()
 run.plot.cld()
-run.plot.chain_mass_spectrum()
-run.plot.chain_counts()
+run.plot.dp_counts()
+run.plot.mass_counts()
 run.plot.monomer_composition()
 run.plot.incremental_composition()
 run.plot.cumulative_composition()

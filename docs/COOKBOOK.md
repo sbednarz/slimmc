@@ -54,84 +54,77 @@ plt.legend()
 
 ## 3. Plot a final MWD
 
-**Goal.** Plot the default mass-weighted MWD on a physical molar-mass axis.
+The default MWD is the exact discrete mass-weighted logarithmic form:
 
 ```python
-import matplotlib.pyplot as plt
-
 mwd = run.mwd()
-
 plt.plot(mwd.x, mwd.y)
-plt.xscale("log")
-plt.xlabel("Molar mass, g mol$^{-1}$")
-plt.ylabel(mwd.metadata["descriptor"])
+plt.xlabel("log$_{10}$(M / g mol$^{-1}$)")
+plt.ylabel("Polymer mass fraction")
 plt.tight_layout()
 plt.show()
 ```
 
-The default MWD is constructed in `log10(M)` and Gaussian-smoothed. `mwd.x`
-remains physical molar mass. Exact `mwd.mn`, `mwd.mw`, `mwd.mz` and
-`mwd.dispersity` come from the source chain population, not the smooth curve.
-
-For an exact discrete representation:
+For physical molar-mass support use another form explicitly:
 
 ```python
-mwd = run.mwd(
-    method="sticks",
-    basis="number",
-    coordinate="linear",
-    output="amount",
-    normalization="absolute",
-)
+mwd = run.mwd(form="mass")
+plt.plot(mwd.mass, mwd.y)
+plt.xscale("log")       # display choice only
+```
+
+Exact unnormalized mass counts are a separate source projection:
+
+```python
+counts = run.mass_counts(pool="dead")
+plt.vlines(counts.mass, 0, counts.count)
 ```
 
 ## 4. Plot a CLD
 
 ```python
-cld = run.cld(method="hist", basis="number")
-
+cld = run.cld()  # form="number"
 plt.plot(cld.x, cld.y)
 plt.xlabel("Degree of polymerization, DP")
-plt.ylabel(cld.metadata["descriptor"])
+plt.ylabel("Chain number fraction")
 plt.tight_layout()
 plt.show()
 ```
 
-Use `basis="mass"` only when you want chain classes weighted by their mass.
+Use `form="mass"` when the question is how polymer mass is distributed among
+DP classes. pyslimmc then accumulates actual chain masses in each DP class.
 
 ## 5. Compare live and dead chains
 
 ```python
-mwd = run.mwd(series=("live", "dead"), normalization="per_series")
+group = run.mwd_series(
+    series=("live", "dead"),
+    form="log",
+    normalization="per_series",
+)
 
-for name, dist in mwd.series.items():
+for name, dist in group.series.items():
     plt.plot(dist.x, dist.y, label=name)
-plt.xscale("log")
 plt.legend()
 plt.show()
 ```
 
-`per_series` emphasizes shape by normalizing each population independently. It
-does not preserve their relative absolute amounts.
+`per_series` compares shapes. To preserve relative physical contributions use
+`normalization="combined"`; the selected series must then be pairwise disjoint.
 
-## 6. Neutral oligomer/chain mass spectrum
+## 6. SEC broadening
 
 ```python
-spectrum = run.chain_mass_spectrum(normalize="count")
-plt.vlines(spectrum.mass, 0, spectrum.intensity)
-plt.xlabel("Neutral chain mass, g mol$^{-1}$")
-plt.ylabel("Chain count")
+sec = run.sec(pool="dead", sigma_log10M=0.05)
+plt.plot(sec.x, sec.y)
+plt.xlabel("log$_{10}$(M / g mol$^{-1}$)")
+plt.ylabel("$dW_{app}/d\\log_{10}M$")
 plt.show()
 ```
 
-For visual base-peak normalization:
-
-```python
-spectrum = run.chain_mass_spectrum(normalize="base_peak")
-```
-
-This is neutral chain mass, not `m/z`: no charge, isotope, adduct,
-fragmentation, ionization or detector model is applied.
+SEC is a continuous instrumental-response model. It is deliberately separate
+from the exact discrete MWD; histogram, KDE, and generic Gaussian smoothing are
+not MWD methods.
 
 ## 7. Inspect copolymer composition drift
 

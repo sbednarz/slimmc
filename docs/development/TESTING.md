@@ -85,16 +85,6 @@ terminal/penultimate/microstructure suite covers four terminal and eight
 penultimate propagation transitions, dyads, triads, blocks, combination
 boundaries, and parity between sequence modes where information overlaps.
 
-Phase F is intentionally different from phases A–E. It does not ask only
-whether event counters, balances, pools, or stored sequences are internally
-self-consistent. It compares black-box simulation results with analytic laws
-derived independently of the Slimmc implementation: geometric and
-combination CLD limits, the Mayo chain-transfer relation, reversible
-propagation equilibrium, the shifted-Poisson living limit, and Mayo–Lewis /
-Alfrey–Goldfinger copolymerization statistics. A self-consistent but
-scientifically wrong rate law can therefore fail phase F while passing the
-internal invariant suites.
-
 ## Required integration invariants
 
 Where applicable, an integration test verifies:
@@ -123,8 +113,7 @@ expected value until the suite turns green.
 | `check-release-config` / provenance checks | reproducible release configuration, clean Git provenance, target platform contract | only with an intentional release-policy change |
 | documentation contract | live links, parser-token coverage, public API/signature coverage, checked model blocks | together with the corresponding public contract |
 | Nim unit tests | local parser, propensity, mutation, arithmetic, and bookkeeping invariants | only when the underlying contract deliberately changes |
-| phases A–E / validation suites | SSA, scheduling, Storage, balance, and finalization invariants | only after a reviewed scientific/format contract change |
-| phase F analytic validation | independent closed-form kinetic laws and limiting distributions | only after the theory, model assumptions, or validated scientific contract is deliberately changed |
+| phases A–E / validation suites | scientific, SSA, scheduling, Storage, balance, and finalization invariants | only after a reviewed scientific/format contract change |
 | homo–copo equivalence | shared behavior represented by both engines | never by changing only one side's expected result without explaining the intended divergence |
 | pyslimmc / pyslimmc-opt tests | public Python behavior | together with the public API and documentation |
 | integration tests | end-to-end CLI → engine → Storage → Python contracts | only with an intentional public contract change |

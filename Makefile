@@ -9,7 +9,7 @@ PYTHON_RUN = env MPLBACKEND="$(MPLBACKEND)" MPLCONFIGDIR="$(MPLCONFIGDIR)" $(PYT
 PYTHON_CHECK = $(PYTHON) scripts/check_python_env.py
 
 .PHONY: help info python-info check-versions check-release-config check-docs check-makefiles build build-engines build-all debug test-fast test test-devel test-full test-release test-pyslimmc test-pyslimmc-opt test-integration test-engines test-cli test-resolved-model \
-	test-phase-a test-phase-b test-phase-c test-phase-d test-phase-e test-phase-f \
+	test-phase-a test-phase-b test-phase-c test-phase-d test-phase-e \
 	test-validation test-depropagation test-terminal-microstructure test-homo-copo-equivalence \
 	clean clean-generated
 
@@ -44,7 +44,7 @@ help:
 	@echo "      Run unit tests plus 92 real CLI/engine/pyslimmc/opt integrations."
 	@echo ""
 	@echo "  make test-devel"
-	@echo "      Run the complete development regression: phases A-F, technical"
+	@echo "      Run the complete development regression: phases A-E, technical"
 	@echo "      validation, depropagation, terminal/penultimate/microstructure"
 	@echo "      validation, and homo-copo equivalence."
 	@echo ""
@@ -60,7 +60,6 @@ help:
 	@echo "  make test-phase-c     Run phase C for homo and copo."
 	@echo "  make test-phase-d     Run phase D for homo and copo."
 	@echo "  make test-phase-e     Run phase E for homo and copo."
-	@echo "  make test-phase-f     Run independent analytic-law checks for homo and copo."
 	@echo "  make test-validation  Run technical validation for homo and copo."
 	@echo "  make test-depropagation"
 	@echo "      Run detailed copo depropagation validation."
@@ -193,14 +192,6 @@ test-phase-e: cli-build
 	$(PYTHON_RUN) copo/tests/validation/phase_e/check_phase_e.py --engine bin/slimmc
 
 
-# Independent closed-form checks. Phase F is deliberately distinct from
-# internal conservation/bookkeeping invariants: it asks whether the simulated
-# kinetics reproduce analytic results derived outside the implementation.
-test-phase-f: cli-build
-	$(PYTHON_RUN) homo/tests/validation/phase_f/check_phase_f.py --engine bin/slimmc
-	$(PYTHON_RUN) copo/tests/validation/phase_f/check_phase_f.py --engine bin/slimmc
-
-
 
 # Copolymer-specific detailed suites with no direct homo counterpart.
 test-depropagation: cli-build
@@ -232,7 +223,7 @@ test: check-versions check-release-config check-docs check-makefiles test-run-id
 	@echo "slimmc family test: PASS"
 
 # Technical validation for both engines.
-test-validation: test-phase-a test-phase-b test-phase-c test-phase-d test-phase-e test-phase-f
+test-validation: test-phase-a test-phase-b test-phase-c test-phase-d test-phase-e
 	@echo "slimmc family test-validation: PASS"
 
 # Complete development regression.

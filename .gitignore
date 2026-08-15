@@ -42,6 +42,18 @@ Thumbs.db
 /tests/validation/**/out/*
 !/tests/validation/**/out/.keep
 !/tests/validation/**/out/.gitkeep
+/homo/tests/validation/**/results*/
+/copo/tests/validation/**/results*/
+
+# generated test binaries
+/cli/tests/run_dispatch_tests
+/common/tests/test_model_contract
+/common/tests/test_run_id
+/copo/tests/run_all_tests
+/homo/slimmc-equivalence
+/homo/slimmc-resolved-test
+/homo/tests/run_parser_tests
+/homo/tests/run_unit_tests
 
 # Legacy channel-validation output location (pre file-relative output_dir fix)
 /tests/validation/copo/engine_channels/*_r[0-9][0-9][0-9]/

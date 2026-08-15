@@ -16,7 +16,7 @@ from .core import (
     ValidationReport, ValidationFailedError,
     FinalSnapshotUnavailableError, SnapshotUnavailableError,
 )
-from .operations import analysis_operation, MWD_HELP, CLD_HELP, SPECTRUM_HELP
+from .operations import analysis_operation, MWD_HELP, CLD_HELP, SEC_HELP
 
 
 AVOGADRO = 6.02214076e23
@@ -758,12 +758,6 @@ class StorageChains(ChainPopulation):
             masses = matrix @ np.asarray(increments, dtype=float)
         return masses
 
-    def select(self, *, pool: str) -> "StorageChains":
-        if pool == "all": return self
-        if pool in {"live", "active"}: return self.live
-        if pool == "dead": return self.dead
-        return self.pool(pool)
-
     @property
     def all(self) -> "StorageChains": return self
     @property
@@ -1042,18 +1036,21 @@ class StorageChains(ChainPopulation):
         return text
 
     @analysis_operation(CLD_HELP)
-    def cld(self, *, mass_model: str | None = None, series=None, **kwargs):
-        return ChainPopulation.cld.__get__(self, type(self))(mass_model=mass_model, series=series, **kwargs)
+    def cld(self, *, form: str = "number", mass_model: str | None = None):
+        return ChainPopulation.cld.__get__(self, type(self))(form=form, mass_model=mass_model)
 
     @analysis_operation(MWD_HELP)
-    def mwd(self, *, mass_model: str | None = None, series=None, **kwargs):
-        if str(kwargs.get("method", "gaussian")).lower() == "sticks" and "sigma" not in kwargs:
-            kwargs["sigma"] = None
-        return ChainPopulation.mwd.__get__(self, type(self))(mass_model=mass_model, series=series, **kwargs)
+    def mwd(self, *, form: str = "log", mass_model: str | None = None):
+        return ChainPopulation.mwd.__get__(self, type(self))(form=form, mass_model=mass_model)
 
-    @analysis_operation(SPECTRUM_HELP)
-    def chain_mass_spectrum(self, *, mass_model: str | None = None, series=None, normalize: str = "count", **kwargs):
-        return ChainPopulation.chain_mass_spectrum.__get__(self, type(self))(mass_model=mass_model, series=series, normalize=normalize, **kwargs)
+    @analysis_operation(SEC_HELP)
+    def sec(self, *, sigma_log10M: float, mass_model: str | None = None,
+            step_log10M: float | None = None):
+        return ChainPopulation.sec.__get__(self, type(self))(
+            sigma_log10M=sigma_log10M, mass_model=mass_model,
+            step_log10M=step_log10M
+        )
+
 
     def _monomer_field(self, prefix: str) -> np.ndarray:
         has_col = f"has_{prefix}"
@@ -1091,99 +1088,165 @@ class StorageChains(ChainPopulation):
 
 
 
-class _MomentLeaf:
-    def __init__(self, owner, population: str, mass_basis: str):
-        self.owner=owner; self.population=population; self.mass_basis=mass_basis
-    def _series(self, name: str): return self.owner._get(self.population, self.mass_basis, name)
-    @property
-    def chain_count(self): return self._series("chain_count")
-    @property
-    def dp_n(self): return self._series("dp_n")
-    @property
-    def dp_w(self): return self._series("dp_w")
-    @property
-    def mn(self): return self._series("mn")
-    @property
-    def mw(self): return self._series("mw")
-    @property
-    def mz(self): return self._series("mz")
-    @property
-    def dispersity(self): return self._series("dispersity")
-
-class _MassBasisBranch:
-    def __init__(self, owner, population: str): self.owner=owner; self.population=population
-    @property
-    def repeat_units(self): return _MomentLeaf(self.owner, self.population, "repeat_units")
-    @property
-    def with_end_groups(self): return _MomentLeaf(self.owner, self.population, "with_end_groups")
-
 class StorageMomentsSeries:
-    def __init__(self, run): self.run=run
+    """Stored exact moment series, with a callable scalar selection API."""
+
+    def __init__(self, run):
+        self.run = run
+
     @property
-    def raw(self): return self.run.table("moments")
+    def raw(self):
+        return self.run.table("moments")
+
     def _id(self, dictionary, name):
-        for i,e in self.run.dictionaries.get(dictionary, {}).items():
-            if e.get("name")==name: return int(i)
-        defaults={"population_scope":{"all":0,"live":1,"dead":2},"mass_bases":{"repeat_units":0,"with_end_groups":1}}
-        return defaults[dictionary][name]
-    def _get(self,population,mass_basis,column):
-        p=self._id("population_scope",population); b=self._id("mass_bases",mass_basis)
-        out=np.full(len(self.run.snapshots), np.nan, dtype=float)
-        tab=self.raw; sid_to_pos={int(s):i for i,s in enumerate(self.run.sid)}
-        mask=(np.asarray(tab["population_scope_id"])==p)&(np.asarray(tab["mass_basis_id"])==b)
-        for sid,val in zip(np.asarray(tab["snapshot_id"])[mask], np.asarray(tab[column])[mask]):
-            if int(sid) in sid_to_pos: out[sid_to_pos[int(sid)]]=val
-        unit={"mn":"g/mol","mw":"g/mol","mz":"g/mol"}.get(column)
+        for i, e in self.run.dictionaries.get(dictionary, {}).items():
+            if e.get("name") == name:
+                return int(i)
+        defaults = {
+            "population_scope": {"all": 0, "live": 1, "dead": 2},
+            "mass_bases": {"repeat_units": 0, "with_end_groups": 1},
+        }
+        try:
+            return defaults[dictionary][name]
+        except KeyError as exc:
+            if dictionary == "population_scope":
+                raise ValueError("population must be 'all', 'live', or 'dead'") from exc
+            raise ValueError("mass_model must be 'repeat_units' or 'with_end_groups'") from exc
+
+    def _get(self, population, mass_model, column):
+        p = self._id("population_scope", population)
+        b = self._id("mass_bases", mass_model)
+        out = np.full(len(self.run.snapshots), np.nan, dtype=float)
+        tab = self.raw
+        sid_to_pos = {int(s): i for i, s in enumerate(self.run.sid)}
+        if column not in tab:
+            raise DataUnavailableError(f"stored moment {column!r} is unavailable")
+        if "population_scope_id" not in tab or "mass_basis_id" not in tab:
+            if population != "all":
+                raise DataUnavailableError("stored moments do not distinguish population scopes")
+            # Legacy/minimal storage: one moment row per snapshot, no mass-basis axis.
+            for sid, val in zip(np.asarray(tab["snapshot_id"]), np.asarray(tab[column])):
+                if int(sid) in sid_to_pos:
+                    out[sid_to_pos[int(sid)]] = val
+        else:
+            mask = (np.asarray(tab["population_scope_id"]) == p) & (np.asarray(tab["mass_basis_id"]) == b)
+            for sid, val in zip(np.asarray(tab["snapshot_id"])[mask], np.asarray(tab[column])[mask]):
+                if int(sid) in sid_to_pos:
+                    out[sid_to_pos[int(sid)]] = val
+        unit = {"mn": "g/mol", "mw": "g/mol", "mz": "g/mol"}.get(column)
         return self.run._series(out, column, unit)
-    @property
-    def all(self): return _MassBasisBranch(self,"all")
-    @property
-    def live(self): return _MassBasisBranch(self,"live")
-    @property
-    def dead(self): return _MassBasisBranch(self,"dead")
-    def select(self, *, population_scope="all", mass_basis="with_end_groups"):
-        return _MomentLeaf(self,population_scope,mass_basis)
-    @property
-    def default(self): return self.all.with_end_groups
+
+    def _canonical_model(self):
+        from .mass_model import resolve_run_mass_model
+        return resolve_run_mass_model(self.run, None)
+
+    def series(self, name: str, *, population="all", mass_model: str | None = None):
+        """Return one stored moment as a run-length series."""
+        from .mass_model import resolve_run_mass_model
+        model = resolve_run_mass_model(self.run, mass_model)
+        aliases = {"dpn": "dp_n", "dpw": "dp_w"}
+        column = aliases.get(str(name), str(name))
+        allowed = {"chain_count", "dp_n", "dp_w", "mn", "mw", "mz", "dispersity"}
+        if column not in allowed:
+            raise ValueError(f"unknown moment {name!r}")
+        return self._get(str(population), model, column)
+
+    def __call__(self, *, snapshot="final", population="all", mass_model: str | None = None):
+        if snapshot == "final":
+            snap = self.run.final
+        elif snapshot == "last":
+            snap = self.run.last
+        elif isinstance(snapshot, (int, np.integer)):
+            snap = self.run.at_snapshot(int(snapshot))
+        elif hasattr(snapshot, "id") and hasattr(snapshot, "run"):
+            snap = snapshot
+        else:
+            raise TypeError("snapshot must be 'final', 'last', a snapshot id, or a Snapshot")
+        return snap.moments(population=population, mass_model=mass_model)
 
     def info_text(self) -> str:
-        names = ("dpn", "dpw", "mn", "mw", "mz", "dispersity")
-        lines = ["MomentsView", "  scope: series over run", "  default: all / with_end_groups",
-                 "  populations: all, live, dead", "  mass bases: repeat_units, with_end_groups",
-                 "  fields: " + ", ".join(names), "", "Common next steps:",
-                 "  run.moments.all.with_end_groups.mw", "  run.moments.live.repeat_units.dpn",
-                 "  run.moments.select(population=\"dead\", mass_basis=\"with_end_groups\")"]
-        return "\n".join(lines)
+        return "\n".join([
+            "MomentsView",
+            "  scope: exact stored series over run; callable scalar selection",
+            "  call: run.moments(snapshot='final', population='dead', mass_model=None)",
+            "  populations: all, live, dead",
+            "  mass models: canonical, repeat_units, with_end_groups",
+            "  series: run.moments.series('mw', population='dead')",
+        ])
 
     def info(self) -> str:
-        text=self.info_text(); print(text); return text
+        text = self.info_text()
+        print(text)
+        return text
 
 
 class StorageMomentsSnapshot:
-    def __init__(self, snapshot): self.snapshot=snapshot
+    """Callable exact moment view for one saved snapshot."""
+
+    def __init__(self, snapshot):
+        self.snapshot = snapshot
+
     @property
     def raw(self):
-        tab=self.snapshot.run.table("moments")
+        tab = self.snapshot.run.table("moments")
         return tab.filtered(np.asarray(tab["snapshot_id"]) == self.snapshot.id)
-    def __getattr__(self, name):
-        if name in self.raw:
-            return self.raw[name]
-        raise AttributeError(name)
-    def _get(self,population,mass_basis,column):
-        series=StorageMomentsSeries(self.snapshot.run)._get(population,mass_basis,column)
-        pos=np.flatnonzero(np.asarray(self.snapshot.run.sid)==self.snapshot.id)
-        if len(pos)==0: raise DataUnavailableError("snapshot moments are unavailable")
+
+    def _get(self, population, mass_model, column):
+        series = StorageMomentsSeries(self.snapshot.run)._get(population, mass_model, column)
+        pos = np.flatnonzero(np.asarray(self.snapshot.run.sid) == self.snapshot.id)
+        if len(pos) == 0:
+            raise DataUnavailableError("snapshot moments are unavailable")
         return np.asarray(series)[int(pos[0])].item()
-    @property
-    def all(self): return _MassBasisBranch(self,"all")
-    @property
-    def live(self): return _MassBasisBranch(self,"live")
-    @property
-    def dead(self): return _MassBasisBranch(self,"dead")
-    def select(self, *, population_scope="all", mass_basis="with_end_groups"):
-        return _MomentLeaf(self,population_scope,mass_basis)
-    @property
-    def default(self): return self.all.with_end_groups
+
+    def __call__(self, *, population="all", mass_model: str | None = None):
+        from .mass_model import resolve_run_mass_model
+        from .moments import PopulationMoments
+
+        population = str(population)
+        if population not in {"all", "live", "dead"}:
+            raise ValueError("population must be 'all', 'live', or 'dead'")
+        model = resolve_run_mass_model(self.snapshot.run, mass_model)
+
+        # If chains are stored, compute the full moment set from the exact selected
+        # population.  This is the only route that can provide DPz with storage v1.2.
+        if getattr(self.snapshot, "has_chains", False):
+            try:
+                from .chains import _select_population
+                selected = _select_population(self.snapshot.chains, population)
+                return selected.moments(mass_model=model)
+            except (DataUnavailableError, InvalidOutputError, KeyError, ValueError):
+                pass
+
+        chain_count = int(round(float(self._get(population, model, "chain_count"))))
+        dpn = float(self._get(population, model, "dp_n"))
+        dpw = float(self._get(population, model, "dp_w"))
+        mn = float(self._get(population, model, "mn"))
+        mw = float(self._get(population, model, "mw"))
+        mz = float(self._get(population, model, "mz"))
+        return PopulationMoments(
+            total_chains=chain_count,
+            dpn=dpn,
+            dpw=dpw,
+            dpz=float("nan"),
+            mn=mn,
+            mw=mw,
+            mz=mz,
+            dp_dispersity=(dpw / dpn if dpn else float("nan")),
+            mass_dispersity=(mw / mn if mn else float("nan")),
+            mass_model=model,
+            snapshot_id=int(self.snapshot.id),
+            t=float(self.snapshot.t),
+            source="stored_aggregate",
+        )
+
+    def info(self) -> str:
+        text = "\n".join([
+            "MomentsView",
+            f"  snapshot: {self.snapshot.id}",
+            "  call: snapshot.moments(population='dead', mass_model=None)",
+        ])
+        print(text)
+        return text
 
 
 
@@ -1793,24 +1856,71 @@ class StorageSnapshot:
         if "moments" not in self.run.tables:
             raise DataUnavailableError("moments table is unavailable")
         return StorageMomentsSnapshot(self)
+    def _canonical_moment(self, column):
+        from .mass_model import resolve_run_mass_model
+        model=resolve_run_mass_model(self.run,None)
+        return StorageMomentsSnapshot(self)._get("all",model,column)
     @property
-    def dpn(self): return self.moments.default.dp_n
+    def dpn(self): return self._canonical_moment("dp_n")
     @property
-    def dpw(self): return self.moments.default.dp_w
+    def dpw(self): return self._canonical_moment("dp_w")
     @property
-    def mn(self): return self.moments.default.mn
+    def dpz(self): return self.moments().dpz
     @property
-    def mw(self): return self.moments.default.mw
+    def mn(self): return self._canonical_moment("mn")
     @property
-    def mz(self): return self.moments.default.mz
+    def mw(self): return self._canonical_moment("mw")
     @property
-    def dispersity(self): return self.moments.default.dispersity
+    def mz(self): return self._canonical_moment("mz")
+    @property
+    def dp_dispersity(self):
+        return self.dpw/self.dpn if self.dpn else float("nan")
+    @property
+    def dispersity(self):
+        try: return self._canonical_moment("dispersity")
+        except DataUnavailableError: return self.mw/self.mn if self.mn else float("nan")
+    def _selected_chains(self, pool="all"):
+        from .chains import _select_population
+        return _select_population(self.chains, str(pool))
+
+    def dp_counts(self, *, pool="all"):
+        selected = self._selected_chains(pool)
+        result = selected.dp_counts()
+        from .counts import DPCounts
+        return DPCounts(result.dp, result.count, result.snapshot_id, result.t, str(pool))
+
+    def mass_counts(self, *, pool="all", mass_model: str | None = None):
+        selected = self._selected_chains(pool)
+        result = selected.mass_counts(mass_model=mass_model)
+        from .counts import MassCounts
+        return MassCounts(result.mass, result.count, result.snapshot_id, result.t, result.mass_model, str(pool))
+
     @analysis_operation(CLD_HELP)
-    def cld(self, **kwargs): return self.chains.cld(**kwargs)
+    def cld(self, *, pool="all", form: str = "number", mass_model: str | None = None):
+        return self._selected_chains(pool).cld(form=form, mass_model=mass_model)
+
+    def cld_series(self, *, series, form: str = "number", normalization: str = "per_series",
+                   mass_model: str | None = None):
+        return self.chains.cld_series(
+            series=series, form=form, normalization=normalization, mass_model=mass_model
+        )
+
     @analysis_operation(MWD_HELP)
-    def mwd(self, **kwargs): return self.chains.mwd(**kwargs)
-    @analysis_operation(SPECTRUM_HELP)
-    def chain_mass_spectrum(self, **kwargs): return self.chains.chain_mass_spectrum(**kwargs)
+    def mwd(self, *, pool="all", form: str = "log", mass_model: str | None = None):
+        return self._selected_chains(pool).mwd(form=form, mass_model=mass_model)
+
+    def mwd_series(self, *, series, form: str = "log", normalization: str = "per_series",
+                   mass_model: str | None = None):
+        return self.chains.mwd_series(
+            series=series, form=form, normalization=normalization, mass_model=mass_model
+        )
+
+    @analysis_operation(SEC_HELP)
+    def sec(self, *, pool="all", sigma_log10M: float, mass_model: str | None = None,
+            step_log10M: float | None = None):
+        return self._selected_chains(pool).sec(
+            sigma_log10M=sigma_log10M, mass_model=mass_model, step_log10M=step_log10M
+        )
 
     @property
     def channels(self) -> StorageChannelsSnapshot:
@@ -3183,23 +3293,55 @@ class StorageRun(Run):
             raise DataUnavailableError("moments table is unavailable")
         return StorageMomentsSeries(self)
     @property
-    def dpn(self): return self.moments.default.dp_n
+    def dpn(self): return self.moments.series("dp_n")
     @property
-    def dpw(self): return self.moments.default.dp_w
+    def dpw(self): return self.moments.series("dp_w")
     @property
-    def mn(self): return self.moments.default.mn
+    def mn(self): return self.moments.series("mn")
     @property
-    def mw(self): return self.moments.default.mw
+    def mw(self): return self.moments.series("mw")
     @property
-    def mz(self): return self.moments.default.mz
+    def mz(self): return self.moments.series("mz")
     @property
-    def dispersity(self): return self.moments.default.dispersity
+    def dp_dispersity(self):
+        dpn=np.asarray(self.dpn,dtype=float); dpw=np.asarray(self.dpw,dtype=float)
+        values=np.divide(dpw,dpn,out=np.full(dpn.shape,np.nan),where=dpn!=0)
+        return self._series(values,"dp_dispersity",None)
+    @property
+    def dispersity(self): return self.moments.series("dispersity")
     @analysis_operation(CLD_HELP)
-    def cld(self, *, snapshot="final", **kwargs): return self._resolve_chain_snapshot(snapshot).cld(**kwargs)
+    def cld(self, *, snapshot="final", pool="all", form: str = "number",
+            mass_model: str | None = None):
+        return self._resolve_chain_snapshot(snapshot).cld(
+            pool=pool, form=form, mass_model=mass_model
+        )
+
+    def cld_series(self, *, snapshot="final", series, form: str = "number",
+                   normalization: str = "per_series", mass_model: str | None = None):
+        return self._resolve_chain_snapshot(snapshot).cld_series(
+            series=series, form=form, normalization=normalization, mass_model=mass_model
+        )
+
     @analysis_operation(MWD_HELP)
-    def mwd(self, *, snapshot="final", **kwargs): return self._resolve_chain_snapshot(snapshot).mwd(**kwargs)
-    @analysis_operation(SPECTRUM_HELP)
-    def chain_mass_spectrum(self, *, snapshot="final", **kwargs): return self._resolve_chain_snapshot(snapshot).chain_mass_spectrum(**kwargs)
+    def mwd(self, *, snapshot="final", pool="all", form: str = "log",
+            mass_model: str | None = None):
+        return self._resolve_chain_snapshot(snapshot).mwd(
+            pool=pool, form=form, mass_model=mass_model
+        )
+
+    def mwd_series(self, *, snapshot="final", series, form: str = "log",
+                   normalization: str = "per_series", mass_model: str | None = None):
+        return self._resolve_chain_snapshot(snapshot).mwd_series(
+            series=series, form=form, normalization=normalization, mass_model=mass_model
+        )
+
+    @analysis_operation(SEC_HELP)
+    def sec(self, *, snapshot="final", pool="all", sigma_log10M: float,
+            mass_model: str | None = None, step_log10M: float | None = None):
+        return self._resolve_chain_snapshot(snapshot).sec(
+            pool=pool, sigma_log10M=sigma_log10M, mass_model=mass_model,
+            step_log10M=step_log10M
+        )
 
     def _resolve_chain_snapshot(self, snapshot):
         if snapshot == "final":
@@ -3212,18 +3354,12 @@ class StorageRun(Run):
             return snapshot
         raise ValueError("snapshot must be 'final', 'last', a snapshot_id, or a Snapshot")
 
-    def chain_counts(self, *, snapshot="final", pool="all", grouping: str = "dp"):
-        if grouping != "dp":
-            raise ValueError("Slimmc Storage chain_counts currently supports grouping='dp' only")
-        from .chain_counts import ChainCounts, ChainCountsGroup
-        snap = self._resolve_chain_snapshot(snapshot)
-        if isinstance(pool, (tuple, list)):
-            return ChainCountsGroup({
-                str(name): ChainCounts.from_population(snap.chains.select(pool=str(name)), pool=str(name))
-                for name in pool
-            })
-        selected = snap.chains.select(pool=str(pool))
-        return ChainCounts.from_population(selected, pool=str(pool))
+    def dp_counts(self, *, snapshot="final", pool="all"):
+        return self._resolve_chain_snapshot(snapshot).dp_counts(pool=pool)
+
+    def mass_counts(self, *, snapshot="final", pool="all", mass_model: str | None = None):
+        return self._resolve_chain_snapshot(snapshot).mass_counts(pool=pool, mass_model=mass_model)
+
 
     def mass_audit(self, *, tolerance: float = 1.0e-9, snapshot="final",
                    mass_model: str | None = None) -> MassAuditResult:

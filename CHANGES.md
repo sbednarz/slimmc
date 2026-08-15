@@ -3,6 +3,25 @@
 This file records public, user-visible changes. Detailed implementation history
 is available from the Git history.
 
+## Slimmc 5.0.2 / pyslimmc 5.0.0
+
+- redesigned chain-distribution analysis around exact `dp_counts()` and
+  `mass_counts()` source projections;
+- replaced the combinatorial `basis`/`method`/`coordinate`/`output` MWD/CLD
+  interface with `form="number"|"mass"|"z"|"log"`;
+- removed histogram, KDE, generic Gaussian smoothing, `ChainMassSpectrum`, and
+  the legacy `chain_counts()` API;
+- added physically explicit SEC broadening in `log10(M)` through `sec()` with
+  required `sigma_log10M`;
+- added exact `PopulationMoments` and separate DP/molar-mass dispersities;
+- added exact multi-series `per_series` and `combined` normalization with
+  overlap validation;
+- centralized canonical mass-model resolution and actual chain-mass projection;
+- expanded mathematical, integration, and literature-oriented regression tests.
+
+This is a breaking pyslimmc API release. Slimmc Storage remains compatible and
+the simulator/model-language semantics are unchanged from the 5.0.x family.
+
 ## 5.0.0 — final unified release
 
 - unified the homo and copo engines behind the public `slimmc` dispatcher;

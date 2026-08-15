@@ -72,29 +72,19 @@ Start here:
     mwd.plot()
 
 Defaults:
-    snapshot='final', pool='all', mass_model='repeat_units'
-    method='gaussian', basis='mass', coordinate='log10'
-    output='density', normalization='per_series'
+    snapshot='final', pool='all', form='log', mass_model=None
 
-Methods:
-    sticks    exact discrete masses
-    hist      histogram without smoothing
-    gaussian  Gaussian-smoothed histogram
-    kde       kernel-density estimate
+Forms:
+    number  discrete chain-number fraction on molar-mass support
+    mass    discrete polymer-mass fraction on molar-mass support
+    z       discrete z-weighted fraction on molar-mass support
+    log     discrete polymer-mass fraction on log10(molar-mass) support
 
-Axes:
-    mwd.x        physical molar mass in g/mol
-    mwd.log10_x  log10(mwd.x)
-    mwd.y        distribution in the selected coordinate
+Exact counts by neutral chain mass:
+    run.mass_counts()
 
-SEC/GPC-like example:
-    run.mwd(method='gaussian', basis='mass', coordinate='log10',
-            output='density', normalization='per_series',
-            bin_width=0.01, sigma=0.04)
-
-Exact chain counts by mass:
-    run.mwd(method='sticks', basis='number', output='amount',
-            normalization='absolute')
+The distribution is exact and discrete. Histogram, KDE and generic Gaussian
+smoothing are intentionally not part of mwd().
 """
 
 CLD_HELP = """Chain-length distribution: cld(...)
@@ -105,34 +95,37 @@ Start here:
     cld.plot()
 
 Defaults:
-    snapshot='final', pool='all'
-    method='sticks', basis='number', coordinate='linear'
-    output='fraction', normalization='per_series'
+    snapshot='final', pool='all', form='number', mass_model=None
 
-Interpretation:
-    cld.x        degree of polymerization (DP)
-    cld.log10_x  log10(cld.x)
-    basis='number' weights chains by count
-    basis='mass' weights DP classes by chain mass
+Forms:
+    number  discrete chain-number fraction by DP
+    mass    discrete polymer-mass fraction by DP
+    z       discrete z-weighted fraction by DP
+    log     discrete polymer-mass fraction on log10(DP) support
+
+Exact chain counts by DP:
+    run.dp_counts()
+
+The distribution is exact and discrete. Histogram, KDE and generic Gaussian
+smoothing are intentionally not part of cld().
 """
 
-SPECTRUM_HELP = """Neutral chain-mass spectrum: chain_mass_spectrum(...)
+
+SEC_HELP = """SEC broadening: sec(...)
 
 Start here:
-    spectrum = run.chain_mass_spectrum()
-    spectrum.info()
-    spectrum.plot()
+    sec = run.sec(sigma_log10M=0.05)
+    sec.info()
+    sec.plot()
 
-Arguments:
-    snapshot='final', pool='all', mass_model='repeat_units'
-    normalize='count' | 'fraction' | 'base_peak'
+Required:
+    sigma_log10M   standard deviation of the Gaussian instrument response
+                   in log10(molar-mass) units
 
-Fields:
-    spectrum.mass
-    spectrum.intensity
-    spectrum.base_peak_mass
-    spectrum.base_peak_intensity
+Optional:
+    snapshot='final', pool='all', mass_model=None, step_log10M=None
 
-This is a neutral-chain mass spectrum, not an m/z spectrum. Charges,
-isotopes, adducts, fragmentation and detector response are not modelled.
+SEC operates directly on exact chain masses and polymer-mass fractions.
+It returns a continuous apparent density dW_app/dlog10(M).  It is an
+instrument-response model, not generic smoothing of an MWD curve.
 """

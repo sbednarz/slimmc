@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyslimmc"
-version = "4.0.0"
+version = "5.0.0"
 description = "Python analysis API for Slimmc simulation results"
 requires-python = ">=3.9"
 dependencies = [

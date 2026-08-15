@@ -78,8 +78,8 @@ def test_homo_chain_counts(homo_run):
 
 
 def test_homo_distributions(homo_run):
-    cld = homo_run.final.cld(method="sticks")
-    mwd = homo_run.final.mwd(method="sticks")
+    cld = homo_run.final.cld()
+    mwd = homo_run.final.mwd()
     assert cld.x.size and mwd.x.size
     assert np.all(cld.y >= 0) and np.all(mwd.y >= 0)
 

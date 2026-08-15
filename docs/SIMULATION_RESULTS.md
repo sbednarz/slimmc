@@ -148,7 +148,7 @@ and total chain counts. It does **not** necessarily store the molecular chain
 population.
 
 `save_chains` marks a snapshot with chain data. Chain-resolved operations such
-as MWD, CLD, chain mass spectra and many microstructure analyses require an
+as MWD, CLD, exact chain-mass counts, SEC broadening, and many microstructure analyses require an
 appropriate snapshot with chains (and, for some analyses, sequence data).
 
 Useful navigation includes:
@@ -178,7 +178,7 @@ important distinction when comparing figures with reported numeric values.
 For a final MWD:
 
 ```python
-mwd = run.final.mwd(method="gaussian", coordinate="log10", basis="mass")
+mwd = run.final.mwd(form="log")
 print(mwd.mn, mwd.mw, mwd.mz, mwd.dispersity)
 ```
 

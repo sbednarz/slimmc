@@ -20,8 +20,10 @@ PYSLIMMC_MODULES = (
     "pyslimmc.runs",
     "pyslimmc._storage",
     "pyslimmc.chains",
-    "pyslimmc.chain_counts",
-    "pyslimmc.spectra",
+    "pyslimmc.counts",
+    "pyslimmc.distributions",
+    "pyslimmc.moments",
+    "pyslimmc.sec",
     "pyslimmc.composition_analysis",
     "pyslimmc.copolymerization",
     "pyslimmc.storage_analysis",
@@ -49,19 +51,15 @@ Storage implementation classes directly.
 | Parameter | Accepted values and meaning |
 |---|---|
 | `snapshot` | `"final"` (default), `"last"`, an integer snapshot ID, or a `StorageSnapshot`. |
-| `pool` | `"all"`, `"live"`, `"dead"`, or a kinetic pool name; a sequence requests a grouped result where supported. |
-| `series` | Mapping/name-to-population selectors for several distributions; mutually exclusive with a non-`all` `pool`. |
-| `mass_model` | `"repeat_units"` or `"with_end_groups"`; `None` uses stored/default mass semantics. |
+| `pool` | `"all"`, `"live"`, `"dead"`, or a kinetic pool name for run/snapshot convenience methods. |
+| `population` | Population selector used by convenience moment access; advanced selection is performed on `ChainPopulation`. |
+| `series` | Named populations for `cld_series()`/`mwd_series()`. |
+| `form` | `"number"`, `"mass"`, `"z"`, or `"log"`. CLD defaults to `"number"`; MWD defaults to `"log"`. |
+| `normalization` | Multi-series only: `"per_series"` or `"combined"`. |
+| `mass_model` | `"repeat_units"` or `"with_end_groups"`; `None` resolves the canonical stored/legacy model. |
+| `sigma_log10M` | Required positive Gaussian SEC width in `log10(M)` units. |
+| `step_log10M` | Optional positive numerical SEC output-grid step in `log10(M)` units. |
 | `progress` | `None` uses `pyslimmc.options.progress`; `True` forces and `False` suppresses progress. |
-| `method` | Distribution representation: `"sticks"`, `"hist"`, `"gaussian"`, or `"kde"`. |
-| `basis` | `"number"` or `"mass"`. |
-| `coordinate` | `"linear"` or `"log10"`. |
-| `output` | `"amount"`, `"fraction"`, or `"density"`. |
-| `normalization` | `"absolute"`, `"per_series"`, `"combined"`, or `"reference"`. |
-| `bins`, `bin_width` | Alternative grid controls; they are mutually exclusive and must be positive. |
-| `sigma` | Positive smoothing width for Gaussian/KDE methods; units follow `coordinate`. |
-| `grid_step` | Positive output-grid step; units follow `coordinate`. |
-| `reference` | Reference series name when `normalization="reference"`. |
 | `style` | Plot style from `available_styles()`; default `"screen"`. |
 | `span` | `None`, `"column"`, or `"double"`; controls owned figure geometry. |
 | `ax` | Existing Matplotlib axes. If supplied, `span` must be omitted. |
@@ -70,12 +68,9 @@ Storage implementation classes directly.
 | `metadata` | Export metadata mode; `"comments"` writes a commented header. |
 | `layout` | Export layout `"wide"` or `"long"` where supported. |
 
-For MWD the defaults are `basis="mass"`, `method="gaussian"`,
-`coordinate="log10"`, `output="density"`, and
-`normalization="per_series"`. For CLD they are `basis="number"`,
-`method="sticks"`, `coordinate="linear"`, `output="fraction"`, and
-`normalization="per_series"`. A neutral chain-mass spectrum uses exact sticks;
-`normalize` is `"count"`, `"fraction"`, or `"base_peak"`.
+Exact amounts are exposed by `dp_counts()` and `mass_counts()`. CLD/MWD are
+discrete normalized mathematical forms. SEC broadening is a separate
+continuous instrumental response and is not a generic MWD smoothing method.
 
 ## Top-level callables
 """

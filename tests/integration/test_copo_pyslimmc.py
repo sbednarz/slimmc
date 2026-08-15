@@ -89,9 +89,9 @@ def test_copo_moments(copo_run):
 
 
 def test_copo_distributions(copo_run):
-    assert copo_run.final.cld(method="sticks").x.size > 0
-    assert copo_run.final.mwd(method="sticks").x.size > 0
-    assert copo_run.final.chain_mass_spectrum().x.size > 0
+    assert copo_run.final.cld().x.size > 0
+    assert copo_run.final.mwd().x.size > 0
+    assert copo_run.final.mass_counts().mass.size > 0
 
 
 def test_copo_channels(copo_run):

@@ -296,7 +296,7 @@ volume information. The same distinction applies at snapshot level.
 | `run.chain_count.live` | attribute | `ndarray` | Living-chain count series. |
 | `run.chain_count.dead` | attribute | `ndarray` | Dead-chain count series. |
 | `run.chain_count.total` | attribute | `ndarray` | Total-chain count series. |
-| `run.moments` | namespace/object | moments series | Stored polymer moments by population/basis. |
+| `run.moments` | namespace/object | moments series | Stored polymer moments by population and mass model. |
 | `run.dpn` | attribute | `ndarray` | Number-average DP series. |
 | `run.dpw` | attribute | `ndarray` | Weight-average DP series. |
 | `run.mn` | attribute | `ndarray` | Number-average molar mass series. |
@@ -341,14 +341,16 @@ chains = run.chains
 
 Both lead to the `Chains` API described in section 5.
 
-### 3.8 Distributions and spectra
+### 3.8 Exact counts, distributions, and SEC
 
 | Name | Kind | Returns | Purpose |
 |---|---|---|---|
 | `run.mwd(...)` | method | `MolarMassDistribution` | Molecular-weight distribution from a selected snapshot. |
 | `run.cld(...)` | method | `ChainLengthDistribution` | Chain-length distribution. |
-| `run.chain_counts(...)` | method | `ChainCounts` | Chain counts grouped by DP or another supported grouping. |
-| `run.chain_mass_spectrum(...)` | method | `ChainMassSpectrum` or `MultiChainMassSpectrum` | Discrete chain-mass spectrum, depending on requested series. |
+| `run.dp_counts(...)` | method | `DPCounts` | Exact chain counts grouped by DP. |
+| `run.mass_counts(...)` | method | `MassCounts` | Exact chain counts grouped by actual neutral molar mass. |
+| `run.sec(...)` | method | `SECDistribution` | Continuous apparent SEC response in `log10(M)`. |
+| `run.mwd_series(...)` / `run.cld_series(...)` | method | `DistributionGroup` | Multi-series composition with `per_series` or `combined` normalization. |
 
 These methods normally default to `snapshot="final"`; a snapshot ID,
 `"last"`, or a `Snapshot` can be selected when supported.
@@ -428,8 +430,8 @@ run.plot
 ├── volume()
 ├── mwd()
 ├── cld()
-├── chain_mass_spectrum()
-├── chain_counts()
+├── dp_counts()
+├── mass_counts()
 ├── monomer_composition()
 ├── incremental_composition()
 ├── cumulative_composition()
@@ -512,7 +514,9 @@ Snapshot
 ├── kinetics                -> KineticsSnapshot
 ├── mwd()                   -> distribution
 ├── cld()                   -> distribution
-├── chain_mass_spectrum()   -> spectrum
+├── dp_counts()             -> DPCounts
+├── mass_counts()           -> MassCounts
+├── sec(...)                -> SECDistribution
 └── validate(...)           -> ValidationReport
 ```
 
@@ -560,7 +564,6 @@ Chains
 | `chains.population_activity(name)` | method | `Chains` | Select by activity classification. |
 | `chains.pool(name)` | method | `Chains` | Select by kinetic pool. |
 | `chains.origin(name)` | namespace/object selector | `Chains` | Select by chain-record origin. |
-| `chains.select(pool=...)` | method | `Chains` | General population/pool selector. |
 | `chains[index]` | indexing | `ChainRecord` (`StorageChainRecord`) | Positional record lookup. |
 | iteration over `chains` | iteration | `ChainRecord` (`StorageChainRecord`) | Iterate over compressed chain records. |
 | `chains.record(id)` | method | `ChainRecord` (`StorageChainRecord`) | Record-ID lookup. |
@@ -618,9 +621,16 @@ chains.where_components(("A", "B"), exact=True)
 
 ```text
 Chains
-├── mwd(...)                    -> distribution
+├── dp_counts()                 -> DPCounts
+├── mass_counts(...)            -> MassCounts
+├── mwd(...)                    -> MolarMassDistribution
 ├── cld(...)                    -> ChainLengthDistribution
-├── chain_mass_spectrum(...)    -> ChainMassSpectrum or MultiChainMassSpectrum
+├── sec(...)                    -> SECDistribution
+├── dp_counts()                 -> DPCounts
+├── mass_counts(...)            -> MassCounts
+├── sec(...)                    -> SECDistribution
+├── mwd_series(...)             -> DistributionGroup
+├── cld_series(...)             -> DistributionGroup
 ├── composition_by_dp(...)      -> CompositionByDP
 ├── composition_dp_map(...)     -> CompositionMap
 ├── composition_mass_map(...)   -> CompositionMap
@@ -666,8 +676,10 @@ Common result families are:
 | Result family | Typical source | Typical user-facing contents |
 |---|---|---|
 | `ChainLengthDistribution` | `run.mwd()`, `run.cld()`, chain equivalents | `x`, `y`, exact moments, export, plot. |
-| `ChainCounts` | `run.chain_counts()` | grouped counts, DP range, totals, table/export/plot. |
-| `ChainMassSpectrum` | `run.chain_mass_spectrum()` | `mass`, `intensity`, base peak, export/plot. |
+| `DPCounts` | `run.dp_counts()` | exact DP/count projection, totals, export/plot. |
+| `MassCounts` | `run.mass_counts()` | exact mass/count projection, mass model, export/plot. |
+| `SECDistribution` | `run.sec()` | continuous apparent `log10(M)` SEC density plus exact source moments. |
+| `DistributionGroup` | `run.mwd_series()` / `run.cld_series()` | named exact distributions with explicit normalization. |
 | `CompositionByDP` | `chains.composition_by_dp()` | composition statistics versus DP, plot. |
 | `CompositionMap` | composition-map methods | 2-D map data, plot. |
 | `ComponentClasses` | `chains.component_classes()` | chain component-class summary. |

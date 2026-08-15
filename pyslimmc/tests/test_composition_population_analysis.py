@@ -25,7 +25,7 @@ def test_composition_filters_work_in_composition_and_full_modes():
             assert c.where_components(('A', 'B')).count.tolist() == [2, 1]
             assert c.where_components(('B',), exact=True).count.tolist() == [4]
             assert c.where_components(('B',), exact=False).count.tolist() == [2, 1, 4]
-            assert c.where_fraction('A', min=0.6).mwd(method='sticks').mn > 0
+            assert c.where_fraction('A', min=0.6).mwd(form='number').mn > 0
         finally:
             td.cleanup()
 
@@ -80,7 +80,8 @@ def test_run_plot_general_namespace_shortcuts():
         assert run.plot.conversion().get_ylabel() == 'conversion'
         assert run.plot.concentrations(entities=('A','B')).get_ylabel() == 'concentration (mol/L)'
         assert run.plot.counts(entities=('A',)).get_ylabel() == 'count'
-        assert run.plot.chain_mass_spectrum().get_xlabel()
-        assert run.plot.chain_counts().get_xlabel() == 'DP'
+        assert run.plot.mwd(form='number').get_xlabel()
+        assert run.plot.cld(form='number').get_xlabel()
+        assert not hasattr(run.plot, 'chain_mass_spectrum')
     finally:
         td.cleanup()

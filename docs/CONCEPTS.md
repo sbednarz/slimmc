@@ -209,7 +209,7 @@ A **snapshot** is the state recorded at a particular simulation time/event.
 volume, channel information, and live/dead/total chain counts.
 
 `save_chains` additionally stores the chain-resolved population required for
-MWD, CLD, chain-mass spectra, composition-resolved chain analysis, and other
+MWD, CLD, exact mass counts, SEC broadening, composition-resolved chain analysis, and other
 chain-level calculations.
 
 Therefore:
@@ -270,100 +270,90 @@ Always state which interpretation is used when comparing calculated masses to
 an experiment or external model. `mass_audit()` checks whether the requested
 interpretation is chemically supported by the stored metadata.
 
-## Exact moments versus displayed distributions
+## Exact source populations, counts, and distributions
 
-`M_n`, `M_w`, `M_z`, dispersity and the corresponding DP moments are calculated
-from the discrete KMC chain population. They do **not** depend on whether an MWD
-is displayed as sticks, a histogram, Gaussian broadening, or KDE.
+A stored chain population is the source of truth. pyslimmc separates four
+operations that should not be conflated:
 
-A smoothed curve is a representation for visualization/analysis. It should not
-be used to recompute moments when the exact population moments are already
-available.
-
-## MWD and CLD
-
-**MWD** organizes chains by molar mass. **CLD** organizes them by degree of
-polymerization (DP).
-
-Both can use different weighting bases:
-
-- `basis="number"` — each represented chain contributes according to chain
-  count;
-- `basis="mass"` — contribution is weighted by chain mass.
-
-Changing the basis changes the distribution being asked for; it is not a plot
-style.
-
-## Sticks, histogram, Gaussian broadening, and KDE
-
-- `sticks` preserves the exact discrete support;
-- `hist` bins the support without smoothing;
-- `gaussian` smooths a binned representation while retaining the histogram
-  support range;
-- `kde` builds a kernel density estimate and can extend tails outside the
-  actually observed mass range.
-
-For MWD the default Gaussian representation is a visualization choice. Exact
-moments still come from the source population.
-
-## Linear versus `log10` coordinate
-
-`coordinate` tells pyslimmc **where the distribution is constructed**, not
-merely how Matplotlib draws the x axis.
-
-For example:
-
-```python
-mwd = run.mwd(coordinate="log10", output="density")
+```text
+selected ChainPopulation
+        |
+        +-- dp_counts()   -> exact DP -> N projection
+        +-- mass_counts() -> exact M  -> N projection
+        +-- cld()/mwd()   -> normalized discrete mathematical forms
+        +-- sec()         -> continuous apparent instrumental response
 ```
 
-builds a density with respect to `log10(M)`. `mwd.x` still contains physical
-molar mass in g/mol, while `mwd.log10_x` contains `log10(mwd.x)`.
+Compressed rows are always weighted by their stored multiplicity.
 
-This is different from constructing a linear-coordinate density and then doing
-only:
+## Exact moments versus represented curves
 
-```python
-plt.xscale("log")
+`DPn`, `DPw`, `DPz`, `Mn`, `Mw`, and `Mz` are source-population statistics.
+They are independent of CLD/MWD form, plotting, SEC broadening, and numerical
+sampling. If a required source aggregate was not stored and chains are not
+available, pyslimmc reports the quantity as unavailable rather than estimating
+it from a displayed curve.
+
+## MWD and CLD forms
+
+Both analyses accept:
+
+```text
+form = number | mass | z | log
 ```
 
-The latter changes the visual axis but not the variable with respect to which
-the density was constructed.
+`number`, `mass`, and `z` specify the discrete weighting. `log` is the canonical
+mass-weighted logarithmic form: the exact mass fractions are placed on
+`log10(DP)` or `log10(M)` support.
 
-## Amount, fraction, and density
+For MWD, actual neutral chain masses are used. General MWD is therefore an
+independent projection of the selected chain population and is not obtained by
+multiplying or transforming an aggregated CLD.
 
-`output` answers how the y values are represented:
+For mass-weighted CLD, pyslimmc sums the actual mass carried by all chains in a
+DP class. Only in a simple homopolymer with a linear DP-to-mass relation does
+this reduce to the familiar `DP * count` weighting.
 
-- `amount` — absolute weighted amount; requires absolute normalization;
-- `fraction` — normalized discrete/bin fraction;
-- `density` — fraction/amount per unit of the selected coordinate.
+## Discrete logarithmic support and the Jacobian
 
-For a log-coordinate mass-basis MWD, a density is naturally interpreted as a
-quantity such as `dW/dlog10(M)`. Distribution metadata provide the canonical
-descriptor used by plotting helpers.
+For a continuous mass density `w(M) = dW/dM`, changing variable to
+`u = log10(M)` gives
 
-## Normalization
+```text
+dW/dlog10(M) = M ln(10) w(M).
+```
 
-For one or multiple series, normalization controls the denominator:
+That Jacobian is required for continuous densities. It is **not** applied to
+an exact discrete atom: a point carrying mass fraction `w_i` still carries
+`w_i` after its location is re-expressed as `log10(M_i)`.
 
-- `absolute` — preserve absolute represented amount;
-- `per_series` — normalize each series independently;
-- `combined` — normalize a set of pairwise-disjoint series together;
-- `reference` — normalize relative to a named reference series.
+Therefore `mwd(form="log")` is an exact discrete measure on logarithmic
+support, not a finite continuous density. `plt.xscale("log")` only changes
+visual presentation.
 
-`combined` is only meaningful when the component populations do not overlap.
-pyslimmc validates this rather than silently double-counting chains.
+## Multi-series normalization
 
-## Neutral chain-mass spectrum
+Multi-series analyses are composed from already valid single-population
+results. `per_series` independently normalizes each series and permits overlap.
+`combined` uses one exact common source denominator and therefore requires
+pairwise-disjoint populations. No common numerical grid is introduced.
 
-`chain_mass_spectrum()` places exact neutral chain masses on a stick spectrum.
-Its default normalization is `count`; `fraction` and `base_peak` are explicit
-alternatives.
+## SEC broadening
 
-It is **not an experimental mass spectrum in m/z**. slimmc does not add charge
-states, isotopic envelopes, adducts, ionization response, fragmentation, or
-instrument response. Treat it as a neutral-chain mass distribution useful for
-oligomer interpretation and for constructing a more detailed external MS model.
+SEC is a separate forward representation of instrumental broadening. With
+`u = log10(M)`, pyslimmc uses
+
+```text
+S(u) = sum_i w_i G_sigma(u - u_i),
+```
+
+where `w_i` are exact polymer-mass fractions and `G_sigma` is a normalized
+Gaussian response. Consequently `S(u)` is a continuous apparent
+`dW_app/dlog10(M)` curve. The public width parameter is `sigma_log10M`; under a
+linear SEC calibration `log10(M) = a - b v`, it corresponds to `b * sigma_v`.
+
+Histogramming, KDE, and generic Gaussian smoothing are intentionally not part
+of the CLD/MWD API.
 
 ## Sequence modes and microstructure
 

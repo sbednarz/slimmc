@@ -140,9 +140,9 @@ is correct.
  
 ### Chain mass spectrum is not m/z
  
-`chain_mass_spectrum()` reports neutral chain masses derived from simulated
+`mass_counts()` reports exact neutral chain masses derived from simulated
 chains. It is not an ionization/adduct/isotope model and does not directly
-predict experimental mass-spectrometric `m/z` spectra.
+predict experimental mass-spectrometric `m/z` spectra or detector intensities.
  
 ### Stored sequence information
  

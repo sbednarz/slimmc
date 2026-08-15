@@ -53,7 +53,7 @@ Marco Drache and collaborators.
   microstructure;
 - analysis across the full molecular-size range, from **small molecules
   through oligomers to linear polymers**, using concentrations, chain
-  populations, MWD/CLD, and neutral chain-mass spectra;
+  populations, exact DP/mass counts, MWD/CLD, and SEC broadening;
 - explicit tracking of **individual polymer-chain populations** rather than
   only average quantities;
 - propagation, termination, transfer, and supported **depropagation**
@@ -164,8 +164,8 @@ pyslimmc-opt.
 
 ## Current releases
 
-- **slimmc 5.0.1** — native simulator binaries for Linux and Windows  
-  [Release page](https://github.com/sbednarz/slimmc/releases/tag/slimmc-v5.0.1)
+- **slimmc 5.0.0** — native simulator binaries for Linux and Windows
+  [Release page](https://github.com/sbednarz/slimmc/releases/tag/slimmc-v5.0.0)
 
 - **pyslimmc 4.0.0** — Python analysis package  
   [Release page](https://github.com/sbednarz/slimmc/releases/tag/pyslimmc-v4.0.0)
