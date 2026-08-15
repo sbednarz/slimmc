@@ -80,8 +80,10 @@ def test_mwd_contract_and_single_export(tmp_path: Path):
             with pytest.raises(TypeError):
                 snap.mwd(**kwargs)
 
-        dist = snap.mwd(form="mass")
-        assert np.isclose(dist.y.sum(), 1.0)
+        dist = snap.mwd()
+        assert np.trapezoid(dist.y, dist.x) == pytest.approx(1.0)
+        assert dist.representation == "density"
+        assert dist.metadata["ordinate"] == "dW/dlog10(M)"
         assert hasattr(dist, "to_tsv")
         assert not hasattr(dist, "to_csv")
         assert not hasattr(dist, "to_gnuplot")

@@ -64,7 +64,7 @@ class analysis_operation(Generic[R]):
         return self.help_text
 
 
-MWD_HELP = """Molar-mass distribution: mwd(...)
+MWD_HELP = """Molar-mass density: mwd(...)
 
 Start here:
     mwd = run.mwd()
@@ -72,19 +72,20 @@ Start here:
     mwd.plot()
 
 Defaults:
-    snapshot='final', pool='all', form='log', mass_model=None
+    snapshot='final', pool='all', mass_model=None
 
-Forms:
-    number  discrete chain-number fraction on molar-mass support
-    mass    discrete polymer-mass fraction on molar-mass support
-    z       discrete z-weighted fraction on molar-mass support
-    log     discrete polymer-mass fraction on log10(molar-mass) support
+Meaning:
+    mass-weighted density dW/dlog10(M), normalized to unit area.
+    Reconstruction follows mcPolymer-style linear interpolation in log10(M).
+    Homopolymer affine M(DP) lattices are zero-filled at missing integer DP;
+    general/copolymer populations interpolate occupied exact-mass support.
 
-Exact counts by neutral chain mass:
+Exact source representations:
     run.mass_counts()
+    run.mass_distribution()
 
-The distribution is exact and discrete. Histogram, KDE and generic Gaussian
-smoothing are intentionally not part of mwd().
+MWD is a derived density representation. It is not the exact discrete mass
+population and it is not an SEC instrument-response curve.
 """
 
 CLD_HELP = """Chain-length distribution: cld(...)
@@ -95,21 +96,19 @@ Start here:
     cld.plot()
 
 Defaults:
-    snapshot='final', pool='all', form='number', mass_model=None
+    snapshot='final', pool='all', weighting='number', mass_model=None
 
-Forms:
-    number  discrete chain-number fraction by DP
-    mass    discrete polymer-mass fraction by DP
-    z       discrete z-weighted fraction by DP
-    log     discrete polymer-mass fraction on log10(DP) support
+Weighting:
+    number  discrete chain-number fraction by integer DP
+    mass    discrete polymer-mass fraction grouped by integer DP
+    z       discrete z-weighted fraction by integer DP
 
 Exact chain counts by DP:
     run.dp_counts()
 
-The distribution is exact and discrete. Histogram, KDE and generic Gaussian
-smoothing are intentionally not part of cld().
+CLD is exact and discrete. A logarithmic plotting axis does not change it into
+an independent logarithmic density.
 """
-
 
 SEC_HELP = """SEC broadening: sec(...)
 

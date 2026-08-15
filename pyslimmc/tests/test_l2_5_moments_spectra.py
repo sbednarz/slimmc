@@ -46,13 +46,15 @@ def main():
         mass_counts=snap.mass_counts()
         assert np.array_equal(mass_counts.mass,np.array([210.,430.])) and mass_counts.total_chains == 5
 
-        cld=snap.cld(form='number')
+        cld=snap.cld(weighting='number')
         assert np.array_equal(cld.x,np.array([2.,4.])) and np.isclose(cld.y.sum(),1.)
-        mwd=snap.mwd(form='number')
+        mwd=snap.mass_distribution(weighting='number')
         assert np.array_equal(mwd.x,np.array([210.,430.])) and np.isclose(mwd.y.sum(),1.)
-        log_mwd=snap.mwd(form='log')
-        assert np.allclose(log_mwd.x,np.log10(mwd.x)) and np.allclose(log_mwd.y,snap.mwd(form='mass').y)
-        assert np.array_equal(run.mwd(form='number').x,mwd.x)
+        log_mwd=snap.mwd()
+        assert log_mwd.representation == 'density'
+        assert log_mwd.metadata['ordinate'] == 'dW/dlog10(M)'
+        assert np.isclose(np.trapezoid(log_mwd.y, log_mwd.x), 1.0)
+        assert np.array_equal(run.mass_distribution(weighting='number').x,mwd.x)
         assert not hasattr(run,'chain_mass_spectrum')
     print('pyslimmc L2.5 moments/distributions: PASS')
 

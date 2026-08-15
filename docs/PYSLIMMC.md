@@ -307,112 +307,100 @@ For copolymers or end-group-aware masses, several different masses may occur at
 the same DP. Therefore general MWD is built independently from actual chain
 masses, not by transforming an already aggregated CLD.
 
-## CLD and MWD forms
+## CLD, mass distributions, MWD, and SEC
 
-The distribution API uses one literature-oriented keyword:
+The distribution API separates exact discrete results from reconstructed or
+instrument-response densities.
+
+Exact chain-length distributions are obtained with:
 
 ```python
-form="number" | "mass" | "z" | "log"
+run.cld(weighting="number")
+run.cld(weighting="mass")
+run.cld(weighting="z")
 ```
 
-Defaults are:
+`cld()` is always a normalized **discrete** distribution on integer DP support.
+For `weighting="mass"`, pyslimmc accumulates the **actual chain mass** carried
+by each DP class; this is not generally equal to `DP * count` for copolymers.
+
+Exact molar-mass distributions are obtained separately:
 
 ```python
-cld = run.cld()   # form="number"
-mwd = run.mwd()   # form="log"
+run.mass_distribution(weighting="number")
+run.mass_distribution(weighting="mass")
+run.mass_distribution(weighting="z")
 ```
 
-All CLD/MWD results are exact **discrete** normalized distributions. There is no
-histogram, KDE, generic Gaussian smoothing, midpoint construction, or generic
-`interpolate=` step in the core API.
+`mass_distribution()` is always a normalized **discrete** distribution on the
+actual neutral molar masses present in the selected chain population. It is the
+preferred representation when the discrete molecular species themselves matter,
+for example in oligomeric populations.
 
-For CLD:
+The default MWD is instead a reconstructed logarithmic mass density:
 
 ```python
-run.cld(form="number")
-run.cld(form="mass")
-run.cld(form="z")
-run.cld(form="log")
+mwd = run.mwd()
 ```
 
-For MWD:
+Its mathematical ordinate is
 
-```python
-run.mwd(form="number")
-run.mwd(form="mass")
-run.mwd(form="z")
-run.mwd(form="log")
+```text
+dW/dlog10(M)
 ```
 
-`form="mass"` CLD accumulates the **actual chain mass** carried by each DP
-class. It is not generally equal to weighting by `DP * count` for copolymers.
+and its numerical area in `log10(M)` is normalized to one. The implementation
+uses the mcPolymer-style transformation `N M^2`, piecewise-linear interpolation
+in `log10(M)`, and area normalization. For an explicitly identified
+homopolymer with a single-valued DP-to-mass relation, missing integer DP states
+are zero-filled before interpolation. General/copolymer populations use the
+occupied exact-mass support without inventing a grid of chemically possible
+masses.
 
-For exact logarithmic forms, the support is transformed but atomic weights are
-unchanged:
+Changing a Matplotlib axis with `plt.xscale("log")` remains only a display
+choice; it does not transform a discrete distribution into `dW/dlog10(M)`.
 
-```python
-m_mass = run.mwd(form="mass")
-m_log = run.mwd(form="log")
-
-# same exact mass fractions
-# m_log.x == log10(m_mass.mass)
-# m_log.y == m_mass.y
-```
-
-Thus `mwd(form="log")` is a discrete mass-weighted distribution on
-`log10(M)` support. It should not be confused with a finite continuous density.
-Changing a Matplotlib axis with `plt.xscale("log")` is only a display choice and
-does not change the mathematical distribution.
-
-Distribution moments remain exact source moments for every form:
+Distribution moments remain exact source-population moments:
 
 ```python
-mwd = run.mwd(form="log")
-mwd.mn
-mwd.mw
-mwd.mz
-mwd.dispersity
+mwd = run.mwd()
+print(mwd.mn, mwd.mw, mwd.mz, mwd.dispersity)
 
-cld = run.cld(form="mass")
-cld.dpn
-cld.dpw
-cld.dpz
-cld.dispersity
+cld = run.cld(weighting="mass")
+print(cld.dpn, cld.dpw, cld.dpz, cld.dispersity)
 ```
 
 CLD intentionally does not expose misleading `mn`/`mw`/`mz` aliases.
 
 ## Multi-series distributions
 
-Multi-series comparison is a separate composition layer:
+Multi-series comparison remains a separate composition layer:
 
 ```python
 g = run.mwd_series(
     series=("live", "dead"),
-    form="log",
     normalization="per_series",
 )
 ```
 
-Accepted normalizations are only:
+Accepted normalizations are `per_series` and `combined`. `per_series` normalizes
+every reconstructed MWD independently to unit area and is intended for shape
+comparison. `combined` preserves the relative polymer-mass contribution of
+pairwise-disjoint populations.
 
-```text
-per_series
-combined
+For exact discrete CLD series, use:
+
+```python
+g = run.cld_series(
+    series=("live", "dead"),
+    weighting="number",
+    normalization="per_series",
+)
 ```
-
-`per_series` normalizes every series independently to 1 and is intended for
-shape comparison. `combined` preserves relative physical contributions using
-exact source totals appropriate to the selected form and requires pairwise-
-disjoint populations; for example `live + dead` is valid, while `all + dead`
-is rejected.
-
-Each series keeps its own exact support. pyslimmc does not construct a common
-grid, interpolate between supports, or insert synthetic bins.
 
 ## SEC broadening
 
-Experimental SEC broadening is intentionally separate from MWD:
+Experimental SEC broadening is intentionally separate from MWD reconstruction:
 
 ```python
 sec = run.sec(
@@ -428,15 +416,11 @@ The model applies a normalized Gaussian instrumental response in
 S(u) = sum_i w_i G_sigma(u - log10(M_i))
 ```
 
-`sec.y` is therefore a genuine continuous apparent density
-`dW_app / dlog10(M)`, unlike the atomic weights returned by discrete
-`mwd(form="log")`.
-
-`sigma_log10M` is required because it is an instrumental/model parameter; no
-silent default is assumed. `step_log10M=` may be supplied to control numerical
-sampling of the output curve. Exact `Mn`, `Mw`, `Mz`, and dispersity attached
-to the SEC result still come from the source chain population and do not depend
-on broadening or grid spacing.
+`sec.y` is therefore the continuous apparent density `dW_app/dlog10(M)`. SEC
+does not depend on the MWD interpolation grid. `sigma_log10M` is required
+because it is an instrumental/model parameter; no silent default is assumed.
+Exact `Mn`, `Mw`, `Mz`, and dispersity attached to the SEC result still come
+from the source chain population.
 
 ## Microstructure
 

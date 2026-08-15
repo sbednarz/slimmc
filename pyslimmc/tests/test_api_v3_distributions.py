@@ -28,7 +28,7 @@ def test_snapshot_contract_first_last_final():
 def test_distribution_help_before_call(capsys):
     td, run = _run()
     try:
-        assert "Molar-mass distribution" in run.mwd.help()
+        assert "Molar-mass density" in run.mwd.help()
         assert "Chain-length distribution" in run.cld.help()
         assert not hasattr(run, "chain_mass_spectrum")
         out = capsys.readouterr().out
@@ -40,19 +40,25 @@ def test_distribution_help_before_call(capsys):
 def test_new_distribution_properties_and_removed_legacy_api():
     td, run = _run()
     try:
-        mwd = run.mwd(form="log")
+        mwd = run.mwd()
         assert np.allclose(mwd.x, np.log10(mwd.mass))
+        assert np.trapezoid(mwd.y, mwd.x) == pytest.approx(1.0)
         assert isinstance(mwd.mn, float)
         assert isinstance(mwd.dispersity, float)
-        assert mwd.form == "log"
-        assert mwd.metadata["representation"] == "discrete"
+        assert mwd.weighting == "mass"
+        assert mwd.coordinate == "log10"
+        assert mwd.representation == "density"
+        assert mwd.metadata["ordinate"] == "dW/dlog10(M)"
         assert not hasattr(mwd, "pdi")
         assert not hasattr(mwd, "method")
         assert not hasattr(mwd, "basis")
-        assert not hasattr(mwd, "coordinate")
         assert not hasattr(mwd, "output")
 
-        cld = run.cld(form="number")
+        md = run.mass_distribution(weighting="mass")
+        assert md.representation == "discrete"
+        assert np.isclose(md.y.sum(), 1.0)
+
+        cld = run.cld(weighting="number")
         assert np.array_equal(cld.x, cld.dp)
         assert np.isclose(cld.y.sum(), 1.0)
         assert hasattr(cld, "dpn") and hasattr(cld, "dpw") and hasattr(cld, "dpz")

@@ -67,7 +67,7 @@ def install() -> None:
     from . import runs as r
     from .report import Report
     from .summary import RunSummary
-    from .distributions import ChainLengthDistribution, MolarMassDistribution
+    from .distributions import ChainLengthDistribution, MassDistribution, MolarMassDistribution
     from .counts import DPCounts, MassCounts
     from .run import MassAuditResult
 
@@ -109,16 +109,16 @@ Variables are available through run.var, run.var["name"].value, run.var.info() a
             setattr(cls,'info',_generic_info)
 
     # Every result/data package must expose info().
-    result_classes=[ChainLengthDistribution,MolarMassDistribution,DPCounts,MassCounts,MassAuditResult]
+    result_classes=[ChainLengthDistribution,MassDistribution,MolarMassDistribution,DPCounts,MassCounts,MassAuditResult]
     result_classes += [v for v in vars(c).values() if isinstance(v,type) and v.__module__==c.__name__]
     for cls in result_classes:
         if 'info' not in cls.__dict__:
             setattr(cls,'info',_generic_info)
 
     operation_groups={
-      s.StorageRun:['mwd','cld','dp_counts','mass_counts','validate','mass_audit','summary'],
-      s.StorageSnapshot:['mwd','cld','dp_counts','mass_counts','validate'],
-      s.StorageChains:['mwd','cld','dp_counts','mass_counts','masses','where'],
+      s.StorageRun:['mwd','cld','mass_distribution','dp_counts','mass_counts','validate','mass_audit','summary'],
+      s.StorageSnapshot:['mwd','cld','mass_distribution','dp_counts','mass_counts','validate'],
+      s.StorageChains:['mwd','cld','mass_distribution','dp_counts','mass_counts','masses','where'],
       a.StorageMicrostructure:['dyads','triads','run_lengths','transition_fraction','homodyad_fraction','blockiness','check_sequence_consistency'],
       a.StorageFirings:['channels','rows','final_row','final_fires','total_fires','channel_fires','delta_fires','fire_shares','rate_shares','validate'],
       a.StorageCopolymerization:['composition','monomer_composition','incremental_composition','cumulative_composition','polymer_composition','reactivity_ratios','mayo_lewis','compare_mayo_lewis','composition_drift','terminal_diagnostics','penultimate_parameters','penultimate_composition','compare_penultimate','penultimate_diagnostics'],

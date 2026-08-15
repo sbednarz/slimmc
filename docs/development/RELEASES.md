@@ -18,7 +18,7 @@ For the versions currently checked in, the only valid release tags are:
 
 ```text
 slimmc-v5.0.2
-pyslimmc-v5.0.0
+pyslimmc-v5.0.1
 pyslimmc-opt-v1.0.0
 ```
 
@@ -46,8 +46,8 @@ git push origin slimmc-v5.0.2
 To publish the Python components from the same commit:
 
 ```bash
-git tag -a pyslimmc-v5.0.0 -m "pyslimmc 5.0.0"
-git push origin pyslimmc-v5.0.0
+git tag -a pyslimmc-v5.0.1 -m "pyslimmc 5.0.1"
+git push origin pyslimmc-v5.0.1
 
 git tag -a pyslimmc-opt-v1.0.0 -m "pyslimmc-opt 1.0.0"
 git push origin pyslimmc-opt-v1.0.0
@@ -62,7 +62,7 @@ Use the helper so all build-time copies change together:
 
 ```bash
 python scripts/set_version.py slimmc 5.0.2
-python scripts/set_version.py pyslimmc 5.0.0
+python scripts/set_version.py pyslimmc 5.0.1
 python scripts/set_version.py pyslimmc-opt 1.0.0
 ```
 

@@ -429,23 +429,29 @@ masses.
 
 ### Chain-length distribution (CLD)
 
-Normalized discrete distribution on degree of polymerization. `form` is one of
-`number`, `mass`, `z`, or `log`. Mass CLD weights each DP class by the actual
-polymer mass carried by chains in that class; logarithmic CLD uses those exact
-mass fractions on `log10(DP)` support.
+Normalized discrete distribution on degree of polymerization. `weighting` is
+`number`, `mass`, or `z`. Mass CLD weights each DP class by the actual polymer
+mass carried by chains in that class.
+
+### Exact mass distribution
+
+`mass_distribution()` returns a normalized discrete distribution on the actual
+neutral molar masses present in the selected chain population. `weighting` is
+`number`, `mass`, or `z`. This is the source-faithful representation for
+discrete/oligomeric populations.
 
 ### Molar-mass distribution (MWD)
 
-Normalized discrete distribution on actual neutral chain molar mass. `number`
-weights by chain count, `mass` by `N M`, `z` by `N M^2`, and `log` places the
-exact mass fractions on `log10(M)` support. Exact MWD is not a histogram, KDE,
-or smoothed detector trace.
+In pyslimmc, `mwd()` specifically denotes the reconstructed mass-weighted
+logarithmic density `dW/dlog10(M)`. It is derived from the exact chain-mass
+measure by mcPolymer-style linear interpolation and is normalized by numerical
+area in `log10(M)`. It is not the source of exact `Mn`, `Mw`, or `Mz`.
 
 ### SEC distribution
 
 Continuous apparent mass distribution produced by Gaussian instrumental
-broadening in `log10(M)`. Unlike exact `mwd(form="log")`, its ordinate is a
-continuous density `dW_app/dlog10(M)`.
+broadening in `log10(M)`, applied directly to the exact mass measure. Its
+ordinate is `dW_app/dlog10(M)`. It is independent of the MWD interpolation grid.
 
 ### Chain-mass spectrum
 

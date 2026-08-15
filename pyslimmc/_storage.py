@@ -1036,12 +1036,16 @@ class StorageChains(ChainPopulation):
         return text
 
     @analysis_operation(CLD_HELP)
-    def cld(self, *, form: str = "number", mass_model: str | None = None):
-        return ChainPopulation.cld.__get__(self, type(self))(form=form, mass_model=mass_model)
+    def cld(self, *, weighting: str = "number", mass_model: str | None = None):
+        return ChainPopulation.cld.__get__(self, type(self))(weighting=weighting, mass_model=mass_model)
 
     @analysis_operation(MWD_HELP)
-    def mwd(self, *, form: str = "log", mass_model: str | None = None):
-        return ChainPopulation.mwd.__get__(self, type(self))(form=form, mass_model=mass_model)
+    def mass_distribution(self, *, weighting: str = "mass", mass_model: str | None = None):
+        return ChainPopulation.mass_distribution.__get__(self, type(self))(weighting=weighting, mass_model=mass_model)
+
+    @analysis_operation(MWD_HELP)
+    def mwd(self, *, mass_model: str | None = None):
+        return ChainPopulation.mwd.__get__(self, type(self))(mass_model=mass_model)
 
     @analysis_operation(SEC_HELP)
     def sec(self, *, sigma_log10M: float, mass_model: str | None = None,
@@ -1896,23 +1900,27 @@ class StorageSnapshot:
         return MassCounts(result.mass, result.count, result.snapshot_id, result.t, result.mass_model, str(pool))
 
     @analysis_operation(CLD_HELP)
-    def cld(self, *, pool="all", form: str = "number", mass_model: str | None = None):
-        return self._selected_chains(pool).cld(form=form, mass_model=mass_model)
+    def cld(self, *, pool="all", weighting: str = "number", mass_model: str | None = None):
+        return self._selected_chains(pool).cld(weighting=weighting, mass_model=mass_model)
 
-    def cld_series(self, *, series, form: str = "number", normalization: str = "per_series",
+    def cld_series(self, *, series, weighting: str = "number", normalization: str = "per_series",
                    mass_model: str | None = None):
         return self.chains.cld_series(
-            series=series, form=form, normalization=normalization, mass_model=mass_model
+            series=series, weighting=weighting, normalization=normalization, mass_model=mass_model
         )
 
     @analysis_operation(MWD_HELP)
-    def mwd(self, *, pool="all", form: str = "log", mass_model: str | None = None):
-        return self._selected_chains(pool).mwd(form=form, mass_model=mass_model)
+    def mass_distribution(self, *, pool="all", weighting: str = "mass", mass_model: str | None = None):
+        return self._selected_chains(pool).mass_distribution(weighting=weighting, mass_model=mass_model)
 
-    def mwd_series(self, *, series, form: str = "log", normalization: str = "per_series",
+    @analysis_operation(MWD_HELP)
+    def mwd(self, *, pool="all", mass_model: str | None = None):
+        return self._selected_chains(pool).mwd(mass_model=mass_model)
+
+    def mwd_series(self, *, series, normalization: str = "per_series",
                    mass_model: str | None = None):
         return self.chains.mwd_series(
-            series=series, form=form, normalization=normalization, mass_model=mass_model
+            series=series, normalization=normalization, mass_model=mass_model
         )
 
     @analysis_operation(SEC_HELP)
@@ -3310,29 +3318,34 @@ class StorageRun(Run):
     @property
     def dispersity(self): return self.moments.series("dispersity")
     @analysis_operation(CLD_HELP)
-    def cld(self, *, snapshot="final", pool="all", form: str = "number",
+    def cld(self, *, snapshot="final", pool="all", weighting: str = "number",
             mass_model: str | None = None):
         return self._resolve_chain_snapshot(snapshot).cld(
-            pool=pool, form=form, mass_model=mass_model
+            pool=pool, weighting=weighting, mass_model=mass_model
         )
 
-    def cld_series(self, *, snapshot="final", series, form: str = "number",
+    def cld_series(self, *, snapshot="final", series, weighting: str = "number",
                    normalization: str = "per_series", mass_model: str | None = None):
         return self._resolve_chain_snapshot(snapshot).cld_series(
-            series=series, form=form, normalization=normalization, mass_model=mass_model
+            series=series, weighting=weighting, normalization=normalization, mass_model=mass_model
+        )
+
+    def mass_distribution(self, *, snapshot="final", pool="all", weighting: str = "mass",
+                          mass_model: str | None = None):
+        return self._resolve_chain_snapshot(snapshot).mass_distribution(
+            pool=pool, weighting=weighting, mass_model=mass_model
         )
 
     @analysis_operation(MWD_HELP)
-    def mwd(self, *, snapshot="final", pool="all", form: str = "log",
-            mass_model: str | None = None):
+    def mwd(self, *, snapshot="final", pool="all", mass_model: str | None = None):
         return self._resolve_chain_snapshot(snapshot).mwd(
-            pool=pool, form=form, mass_model=mass_model
+            pool=pool, mass_model=mass_model
         )
 
-    def mwd_series(self, *, snapshot="final", series, form: str = "log",
-                   normalization: str = "per_series", mass_model: str | None = None):
+    def mwd_series(self, *, snapshot="final", series, normalization: str = "per_series",
+                   mass_model: str | None = None):
         return self._resolve_chain_snapshot(snapshot).mwd_series(
-            series=series, form=form, normalization=normalization, mass_model=mass_model
+            series=series, normalization=normalization, mass_model=mass_model
         )
 
     @analysis_operation(SEC_HELP)

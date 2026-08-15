@@ -324,6 +324,10 @@ class RunPlotNamespace:
         plot = self._split_plot_kwargs(kwargs)
         return self._run.mwd(snapshot=snapshot, **kwargs).plot(**plot)
 
+    def mass_distribution(self, *, snapshot="final", **kwargs):
+        plot = self._split_plot_kwargs(kwargs)
+        return self._run.mass_distribution(snapshot=snapshot, **kwargs).plot(**plot)
+
     def cld(self, *, snapshot="final", **kwargs):
         plot = self._split_plot_kwargs(kwargs)
         return self._run.cld(snapshot=snapshot, **kwargs).plot(**plot)

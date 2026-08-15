@@ -345,8 +345,9 @@ Both lead to the `Chains` API described in section 5.
 
 | Name | Kind | Returns | Purpose |
 |---|---|---|---|
-| `run.mwd(...)` | method | `MolarMassDistribution` | Molecular-weight distribution from a selected snapshot. |
-| `run.cld(...)` | method | `ChainLengthDistribution` | Chain-length distribution. |
+| `run.mwd(...)` | method | `MolarMassDistribution` | Reconstructed `dW/dlog10(M)` density from a selected snapshot. |
+| `run.cld(...)` | method | `ChainLengthDistribution` | Exact normalized discrete chain-length distribution. |
+| `run.mass_distribution(...)` | method | `MassDistribution` | Exact normalized discrete distribution on actual molar-mass support. |
 | `run.dp_counts(...)` | method | `DPCounts` | Exact chain counts grouped by DP. |
 | `run.mass_counts(...)` | method | `MassCounts` | Exact chain counts grouped by actual neutral molar mass. |
 | `run.sec(...)` | method | `SECDistribution` | Continuous apparent SEC response in `log10(M)`. |
@@ -625,9 +626,7 @@ Chains
 ├── mass_counts(...)            -> MassCounts
 ├── mwd(...)                    -> MolarMassDistribution
 ├── cld(...)                    -> ChainLengthDistribution
-├── sec(...)                    -> SECDistribution
-├── dp_counts()                 -> DPCounts
-├── mass_counts(...)            -> MassCounts
+├── mass_distribution(...)      -> MassDistribution
 ├── sec(...)                    -> SECDistribution
 ├── mwd_series(...)             -> DistributionGroup
 ├── cld_series(...)             -> DistributionGroup
@@ -675,11 +674,13 @@ Common result families are:
 
 | Result family | Typical source | Typical user-facing contents |
 |---|---|---|
-| `ChainLengthDistribution` | `run.mwd()`, `run.cld()`, chain equivalents | `x`, `y`, exact moments, export, plot. |
+| `ChainLengthDistribution` | `run.cld()`, chain equivalents | discrete `x`, `y`, exact DP moments, export, plot. |
+| `MassDistribution` | `run.mass_distribution()` | exact discrete mass support/fractions plus exact source moments. |
+| `MolarMassDistribution` | `run.mwd()` | reconstructed `dW/dlog10(M)` density plus exact source moments. |
 | `DPCounts` | `run.dp_counts()` | exact DP/count projection, totals, export/plot. |
 | `MassCounts` | `run.mass_counts()` | exact mass/count projection, mass model, export/plot. |
 | `SECDistribution` | `run.sec()` | continuous apparent `log10(M)` SEC density plus exact source moments. |
-| `DistributionGroup` | `run.mwd_series()` / `run.cld_series()` | named exact distributions with explicit normalization. |
+| `DistributionGroup` | `run.mwd_series()` / `run.cld_series()` | named MWD densities or exact CLDs with explicit normalization. |
 | `CompositionByDP` | `chains.composition_by_dp()` | composition statistics versus DP, plot. |
 | `CompositionMap` | composition-map methods | 2-D map data, plot. |
 | `ComponentClasses` | `chains.component_classes()` | chain component-class summary. |

@@ -206,7 +206,7 @@ Properties: `all`, `chain_record_id`, `component_count`, `composition`, `conc`, 
 - `StorageChains.at_snapshot(snapshot_id: 'int') -> "'StorageChains'"`
 - `StorageChains.block_count(monomer=None, *, progress=None)`
 - `StorageChains.block_lengths(monomer=None, *, progress=None)`
-- `StorageChains.cld(*, form: 'str' = 'number', mass_model: 'str | None' = None)`
+- `StorageChains.cld(*, weighting: 'str' = 'number', mass_model: 'str | None' = None)`
 - `StorageChains.component_classes()`
 - `StorageChains.composition_by_dp(*, bins=None)`
 - `StorageChains.composition_dp_map(monomer: 'str', *, dp_bins=None, fraction_bins=None)`
@@ -220,11 +220,12 @@ Properties: `all`, `chain_record_id`, `component_count`, `composition`, `conc`, 
 - `StorageChains.info_text() -> 'str'`
 - `StorageChains.junction_position(left: 'str', right: 'str') -> 'np.ndarray'`
 - `StorageChains.junction_positions(left: 'str', right: 'str') -> 'tuple[tuple[int, ...], ...]'`
+- `StorageChains.mass_distribution(*, weighting: 'str' = 'mass', mass_model: 'str | None' = None)`
 - `StorageChains.masses(*, mass_model: 'str' = 'with_end_groups') -> 'np.ndarray'`
 - `StorageChains.microstructure_by_dp(statistic, *, monomer=None, bins=None, progress=None)`
 - `StorageChains.microstructure_map(statistic, *, monomer=None, dp_bins=None, value_bins=None, progress=None)`
 - `StorageChains.motif_counts(motif, *, progress=None)`
-- `StorageChains.mwd(*, form: 'str' = 'log', mass_model: 'str | None' = None)`
+- `StorageChains.mwd(*, mass_model: 'str | None' = None)`
 - `StorageChains.ngrams(n=4, *, min_count=1, progress=None)`
 - `StorageChains.pool(name: 'str') -> "'StorageChains'"`
 - `StorageChains.population_activity(name: 'str') -> "'StorageChains'"`
@@ -356,8 +357,8 @@ Properties: `F`, `actions`, `balance`, `c0`, `chain_count`, `chains`, `channel_e
 - `StorageRun.at_snapshot(snapshot_id: 'int') -> 'StorageSnapshot'`
 - `StorageRun.at_temperature(temperature: 'float') -> 'tuple[StorageSnapshot, ...]'`
 - `StorageRun.at_time(time: 'float', *, method: 'str' = 'before') -> 'StorageSnapshot'`
-- `StorageRun.cld(*, snapshot='final', pool='all', form: 'str' = 'number', mass_model: 'str | None' = None)`
-- `StorageRun.cld_series(*, snapshot='final', series, form: 'str' = 'number', normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
+- `StorageRun.cld(*, snapshot='final', pool='all', weighting: 'str' = 'number', mass_model: 'str | None' = None)`
+- `StorageRun.cld_series(*, snapshot='final', series, weighting: 'str' = 'number', normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
 - `StorageRun.column_unit(table: 'str', column: 'str') -> 'str | None'`
 - `StorageRun.dictionary(name: 'str') -> 'dict[int, dict]'`
 - `StorageRun.dp_counts(*, snapshot='final', pool='all')`
@@ -366,8 +367,9 @@ Properties: `F`, `actions`, `balance`, `c0`, `chain_count`, `chains`, `channel_e
 - `StorageRun.info_text() -> 'str'`
 - `StorageRun.mass_audit(*, tolerance: 'float' = 1e-09, snapshot='final', mass_model: 'str | None' = None) -> 'MassAuditResult'`
 - `StorageRun.mass_counts(*, snapshot='final', pool='all', mass_model: 'str | None' = None)`
-- `StorageRun.mwd(*, snapshot='final', pool='all', form: 'str' = 'log', mass_model: 'str | None' = None)`
-- `StorageRun.mwd_series(*, snapshot='final', series, form: 'str' = 'log', normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
+- `StorageRun.mass_distribution(*, snapshot='final', pool='all', weighting: 'str' = 'mass', mass_model: 'str | None' = None)`
+- `StorageRun.mwd(*, snapshot='final', pool='all', mass_model: 'str | None' = None)`
+- `StorageRun.mwd_series(*, snapshot='final', series, normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
 - `StorageRun.refresh()`
 - `StorageRun.sec(*, snapshot='final', pool='all', sigma_log10M: 'float', mass_model: 'str | None' = None, step_log10M: 'float | None' = None)`
 - `StorageRun.summary(path: 'str | Path | None' = None)`
@@ -378,15 +380,16 @@ Properties: `F`, `actions`, `balance`, `c0`, `chain_count`, `chains`, `channel_e
 
 Properties: `F`, `chains`, `channels`, `conc`, `conv`, `count`, `dispersity`, `dp_dispersity`, `dpn`, `dpw`, `dpz`, `endgroups`, `event`, `f`, `f0`, `free_monomer_composition`, `has_chains`, `has_sequences`, `id`, `initial_monomer_composition`, `is_final`, `k`, `kinetic_parameter_set_id`, `kinetics`, `kmc_event`, `kmc_volume`, `mn`, `moles`, `moments`, `monomer_names`, `monomers`, `mw`, `mz`, `output_status`, `polymer_composition`, `reason`, `reason_id`, `state`, `t`, `temp`, `time`, `validation`, `volume`.
 
-- `StorageSnapshot.cld(*, pool='all', form: 'str' = 'number', mass_model: 'str | None' = None)`
-- `StorageSnapshot.cld_series(*, series, form: 'str' = 'number', normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
+- `StorageSnapshot.cld(*, pool='all', weighting: 'str' = 'number', mass_model: 'str | None' = None)`
+- `StorageSnapshot.cld_series(*, series, weighting: 'str' = 'number', normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
 - `StorageSnapshot.dp_counts(*, pool='all')`
 - `StorageSnapshot.help() -> 'str'`
 - `StorageSnapshot.info() -> 'str'`
 - `StorageSnapshot.info_text() -> 'str'`
 - `StorageSnapshot.mass_counts(*, pool='all', mass_model: 'str | None' = None)`
-- `StorageSnapshot.mwd(*, pool='all', form: 'str' = 'log', mass_model: 'str | None' = None)`
-- `StorageSnapshot.mwd_series(*, series, form: 'str' = 'log', normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
+- `StorageSnapshot.mass_distribution(*, pool='all', weighting: 'str' = 'mass', mass_model: 'str | None' = None)`
+- `StorageSnapshot.mwd(*, pool='all', mass_model: 'str | None' = None)`
+- `StorageSnapshot.mwd_series(*, series, normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
 - `StorageSnapshot.refresh()`
 - `StorageSnapshot.sec(*, pool='all', sigma_log10M: 'float', mass_model: 'str | None' = None, step_log10M: 'float | None' = None)`
 - `StorageSnapshot.validate(*, strict: 'bool' = False) -> 'ValidationReport'`
@@ -453,14 +456,15 @@ Properties: `array`.
 Properties: `compressed_rows`, `count`, `counts`, `endgroups`, `total_chains`, `total_repeat_units`.
 
 - `ChainPopulation.all() -> "'ChainPopulation'"`
-- `ChainPopulation.cld(*, form: 'str' = 'number', mass_model: 'str | None' = None)`
-- `ChainPopulation.cld_series(*, series, form: 'str' = 'number', normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
+- `ChainPopulation.cld(*, weighting: 'str' = 'number', mass_model: 'str | None' = None)`
+- `ChainPopulation.cld_series(*, series, weighting: 'str' = 'number', normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
 - `ChainPopulation.counts_total() -> 'np.ndarray'`
 - `ChainPopulation.dp_counts()`
 - `ChainPopulation.mass_counts(*, mass_model: 'str | None' = None)`
+- `ChainPopulation.mass_distribution(*, weighting: 'str' = 'mass', mass_model: 'str | None' = None)`
 - `ChainPopulation.moments(*, mass_model: 'str | None' = None)`
-- `ChainPopulation.mwd(*, form: 'str' = 'log', mass_model: 'str | None' = None)`
-- `ChainPopulation.mwd_series(*, series, form: 'str' = 'log', normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
+- `ChainPopulation.mwd(*, mass_model: 'str | None' = None)`
+- `ChainPopulation.mwd_series(*, series, normalization: 'str' = 'per_series', mass_model: 'str | None' = None)`
 - `ChainPopulation.row(index: 'int') -> 'ChainRow'`
 - `ChainPopulation.rows() -> 'tuple[ChainRow, ...]'`
 - `ChainPopulation.sec(*, sigma_log10M: 'float', mass_model: 'str | None' = None, step_log10M: 'float | None' = None)`
@@ -498,15 +502,21 @@ Properties: `dispersity`, `dp`.
 
 Properties: `is_empty`, `series_names`, `x`, `y`.
 
-- `DistributionGroup.help()`
-- `DistributionGroup.info()`
-- `DistributionGroup.plot(*, ax=None, **plot_kwargs)`
 
-### `MolarMassDistribution`
+### `MassDistribution`
 
 Properties: `dispersity`, `mass`.
 
-- `MolarMassDistribution.info() -> 'str'`
+- `MassDistribution.info() -> 'str'`
+
+### `MolarMassDistribution`
+
+Properties: `coordinate`, `dispersity`, `is_empty`, `log10_mass`, `log10_x`, `mass`, `meta`, `representation`, `weighting`, `x`, `y`.
+
+- `MolarMassDistribution.help()`
+- `MolarMassDistribution.info()`
+- `MolarMassDistribution.plot(*, ax=None, **plot_kwargs)`
+- `MolarMassDistribution.to_tsv(path: 'str | Path')`
 
 ### `PopulationMoments`
 
@@ -554,6 +564,7 @@ Properties: `dispersity`, `is_empty`, `log10_mass`, `mass`, `meta`, `metadata`, 
 - `RunPlotNamespace.dp_counts(*, snapshot='final', pool='all', **plot_kwargs)`
 - `RunPlotNamespace.incremental_composition(*, x='conversion', **plot_kwargs)`
 - `RunPlotNamespace.mass_counts(*, snapshot='final', pool='all', mass_model=None, **plot_kwargs)`
+- `RunPlotNamespace.mass_distribution(*, snapshot='final', **kwargs)`
 - `RunPlotNamespace.mayo_lewis(**plot_kwargs)`
 - `RunPlotNamespace.microstructure_by_dp(statistic, *, snapshot='final', monomer=None, bins=None, progress=None, **plot_kwargs)`
 - `RunPlotNamespace.microstructure_map(statistic, *, snapshot='final', monomer=None, dp_bins=None, value_bins=None, progress=None, **plot_kwargs)`

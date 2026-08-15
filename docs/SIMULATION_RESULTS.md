@@ -178,7 +178,7 @@ important distinction when comparing figures with reported numeric values.
 For a final MWD:
 
 ```python
-mwd = run.final.mwd(form="log")
+mwd = run.final.mwd()
 print(mwd.mn, mwd.mw, mwd.mz, mwd.dispersity)
 ```
 

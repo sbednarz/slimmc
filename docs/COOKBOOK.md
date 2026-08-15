@@ -54,22 +54,22 @@ plt.legend()
 
 ## 3. Plot a final MWD
 
-The default MWD is the exact discrete mass-weighted logarithmic form:
+The default MWD is the reconstructed mass-weighted logarithmic density:
 
 ```python
 mwd = run.mwd()
 plt.plot(mwd.x, mwd.y)
 plt.xlabel("log$_{10}$(M / g mol$^{-1}$)")
-plt.ylabel("Polymer mass fraction")
+plt.ylabel("dW/dlog$_{10}$(M)")
 plt.tight_layout()
 plt.show()
 ```
 
-For physical molar-mass support use another form explicitly:
+For the exact discrete distribution on physical molar-mass support use:
 
 ```python
-mwd = run.mwd(form="mass")
-plt.plot(mwd.mass, mwd.y)
+md = run.mass_distribution(weighting="mass")
+plt.plot(md.mass, md.y)
 plt.xscale("log")       # display choice only
 ```
 
@@ -83,7 +83,7 @@ plt.vlines(counts.mass, 0, counts.count)
 ## 4. Plot a CLD
 
 ```python
-cld = run.cld()  # form="number"
+cld = run.cld()  # weighting="number"
 plt.plot(cld.x, cld.y)
 plt.xlabel("Degree of polymerization, DP")
 plt.ylabel("Chain number fraction")
@@ -91,7 +91,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-Use `form="mass"` when the question is how polymer mass is distributed among
+Use `weighting="mass"` when the question is how polymer mass is distributed among
 DP classes. pyslimmc then accumulates actual chain masses in each DP class.
 
 ## 5. Compare live and dead chains
@@ -99,7 +99,6 @@ DP classes. pyslimmc then accumulates actual chain masses in each DP class.
 ```python
 group = run.mwd_series(
     series=("live", "dead"),
-    form="log",
     normalization="per_series",
 )
 
@@ -123,8 +122,8 @@ plt.show()
 ```
 
 SEC is a continuous instrumental-response model. It is deliberately separate
-from the exact discrete MWD; histogram, KDE, and generic Gaussian smoothing are
-not MWD methods.
+from both the exact discrete mass distribution and the reconstructed MWD.
+Histogram, KDE, and generic Gaussian smoothing are not core MWD methods.
 
 ## 7. Inspect copolymer composition drift
 

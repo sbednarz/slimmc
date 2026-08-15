@@ -1,4 +1,4 @@
-# pyslimmc 5.0.0 public API
+# pyslimmc 5.0.1 public API
 
 This is the canonical public reference for the read-only Python interface to
 Slimmc Storage 1.2.0. It documents supported names rather than implementation
@@ -382,27 +382,34 @@ mass = run.mass_counts(snapshot="final", pool="dead", mass_model=None)
 `count`, `total_chains`, `min_mass`, `max_mass`, `mass_model`, `to_tsv()`, and
 `plot()`. These objects intentionally do not provide generic `x`/`y` aliases.
 
-Single-population normalized distributions are:
+Single-population exact discrete distributions are:
 
 ```python
-mwd = run.mwd(snapshot="final", pool="dead", form="log", mass_model=None)
-cld = run.cld(snapshot="final", pool="dead", form="number", mass_model=None)
+cld = run.cld(snapshot="final", pool="dead", weighting="number", mass_model=None)
+mass_dist = run.mass_distribution(
+    snapshot="final", pool="dead", weighting="mass", mass_model=None
+)
 ```
 
-Accepted forms are `number`, `mass`, `z`, and `log`. MWD defaults to `log`; CLD
-defaults to `number`. Results are exact discrete distributions. There are no
-public `basis`, `method`, `coordinate`, `output`, histogram, KDE, generic
-Gaussian, bin-width, or interpolation controls.
+`cld()` accepts `weighting="number"`, `"mass"`, or `"z"` and remains discrete
+on integer DP support. `mass_distribution()` accepts the same weightings and
+remains discrete on exact neutral-mass support. Both normalize by summation.
 
-`MolarMassDistribution` exposes `x`, `y`, `mass`, `form`, `mass_model`, exact
-`mn`, `mw`, `mz`, `dispersity`, source metadata, export, plot, `info()`, and
-`help()`. `ChainLengthDistribution` analogously exposes `x`, `y`, `dp`, `form`,
-`dpn`, `dpw`, `dpz`, and DP dispersity; it intentionally has no `mn`/`mw`/`mz`
-aliases.
+The reconstructed polymer MWD is:
 
-For `form="log"`, `x` is `log10(DP)` or `log10(M)`, while `dp`/`mass` retain
-physical support. Atomic weights are unchanged from the mass form; the result
-is a discrete measure, not a finite continuous density.
+```python
+mwd = run.mwd(snapshot="final", pool="dead", mass_model=None)
+```
+
+`MolarMassDistribution.x` is `log10(M)` and `y` is the normalized density
+`dW/dlog10(M)`. The reconstruction uses the documented mcPolymer-style linear
+interpolation. Exact source `mn`, `mw`, `mz`, and dispersity remain attached to
+the result and are not estimated from the displayed curve.
+
+`MassDistribution` exposes `x`, `y`, `mass`, `weighting`, `mass_model`, exact
+source moments, export, plot, `info()`, and `help()`.
+`ChainLengthDistribution` analogously exposes `x`, `y`, `dp`, `weighting`,
+`dpn`, `dpw`, `dpz`, and DP dispersity.
 
 Multi-series composition is explicit:
 
@@ -410,17 +417,17 @@ Multi-series composition is explicit:
 g = run.mwd_series(
     snapshot="final",
     series=("live", "dead"),
-    form="log",
     normalization="per_series",
 )
 ```
 
-and likewise `cld_series()`. Only `per_series` and `combined` are accepted.
-`combined` uses exact form-dependent source totals and requires pairwise-
-disjoint populations. Each member retains its own exact support; no common
-interpolation grid is created.
+`mwd_series()` contains reconstructed logarithmic MWD densities. `cld_series()`
+contains exact discrete CLDs and additionally accepts `weighting=`. Only
+`per_series` and `combined` normalizations are accepted. `combined` requires
+pairwise-disjoint populations.
 
-SEC instrumental broadening is separate:
+SEC instrumental broadening is separate and acts directly on the exact mass
+measure:
 
 ```python
 sec = run.sec(
@@ -433,8 +440,9 @@ sec = run.sec(
 ```
 
 `SECDistribution.y` is the continuous apparent density
-`dW_app/dlog10(M)`. `sigma_log10M` is required. Exact source `mn`, `mw`, `mz`,
-and dispersity remain attached to the result and are independent of broadening.
+`dW_app/dlog10(M)`. `sigma_log10M` is required. SEC does not depend on the MWD
+reconstruction grid. Exact source `mn`, `mw`, `mz`, and dispersity remain
+attached to the result.
 
 ## Channels, firings, kinetics, and actions
 

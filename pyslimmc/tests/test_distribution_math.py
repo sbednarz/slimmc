@@ -286,81 +286,95 @@ def test_same_dp_can_map_to_multiple_masses(oracle_run):
 
 
 @pytest.mark.parametrize(
-    ("form", "expected"),
+    ("weighting", "expected"),
     [
         ("number", EXPECTED_CLD_NUMBER),
         ("mass", EXPECTED_CLD_MASS),
         ("z", EXPECTED_CLD_Z),
     ],
 )
-def test_cld_discrete_forms(oracle_run, form, expected):
-    d = oracle_run.cld(pool="dead", form=form, mass_model="repeat_units")
+def test_cld_discrete_weightings(oracle_run, weighting, expected):
+    d = oracle_run.cld(pool="dead", weighting=weighting, mass_model="repeat_units")
     np.testing.assert_allclose(d.x, EXPECTED_DP)
     np.testing.assert_allclose(d.y, expected)
-    assert d.form == form
+    assert d.weighting == weighting
+    assert d.representation == "discrete"
     assert d.y.sum() == pytest.approx(1.0)
 
 
 @pytest.mark.parametrize(
-    ("form", "expected"),
+    ("weighting", "expected"),
     [
         ("number", EXPECTED_MWD_NUMBER),
         ("mass", EXPECTED_MWD_MASS),
         ("z", EXPECTED_MWD_Z),
     ],
 )
-def test_mwd_discrete_forms(oracle_run, form, expected):
-    d = oracle_run.mwd(pool="dead", form=form, mass_model="repeat_units")
+def test_mass_distribution_discrete_weightings(oracle_run, weighting, expected):
+    d = oracle_run.mass_distribution(
+        pool="dead", weighting=weighting, mass_model="repeat_units"
+    )
     np.testing.assert_allclose(d.x, EXPECTED_MASS)
     np.testing.assert_allclose(d.y, expected)
-    assert d.form == form
+    assert d.weighting == weighting
+    assert d.representation == "discrete"
     assert d.y.sum() == pytest.approx(1.0)
 
 
 def test_cld_mass_uses_actual_chain_mass_within_dp_class(oracle_run):
     """DP=2 contains both M=200 and M=250 and must aggregate both masses."""
-    cld = oracle_run.cld(pool="dead", form="mass", mass_model="repeat_units")
-    mwd = oracle_run.mwd(pool="dead", form="mass", mass_model="repeat_units")
+    cld = oracle_run.cld(pool="dead", weighting="mass", mass_model="repeat_units")
+    md = oracle_run.mass_distribution(
+        pool="dead", weighting="mass", mass_model="repeat_units"
+    )
 
     cld_dp2 = cld.y[np.flatnonzero(cld.x == 2.0)[0]]
-    mwd_dp2_mass = mwd.y[np.isin(mwd.x, [200.0, 250.0])].sum()
+    md_dp2_mass = md.y[np.isin(md.x, [200.0, 250.0])].sum()
 
     assert cld_dp2 == pytest.approx(850.0 / 2650.0)
-    assert cld_dp2 == pytest.approx(mwd_dp2_mass)
+    assert cld_dp2 == pytest.approx(md_dp2_mass)
 
 
-def test_log_mwd_changes_support_not_atomic_mass_fractions(oracle_run):
-    linear = oracle_run.mwd(pool="dead", form="mass", mass_model="repeat_units")
-    log = oracle_run.mwd(pool="dead", form="log", mass_model="repeat_units")
-
-    np.testing.assert_allclose(log.x, np.log10(linear.x))
-    np.testing.assert_allclose(log.y, linear.y)
-    assert log.form == "log"
-    assert log.y.sum() == pytest.approx(1.0)
-
-
-def test_log_cld_changes_support_not_atomic_mass_fractions(oracle_run):
-    linear = oracle_run.cld(pool="dead", form="mass", mass_model="repeat_units")
-    log = oracle_run.cld(pool="dead", form="log", mass_model="repeat_units")
-
-    np.testing.assert_allclose(log.x, np.log10(linear.x))
-    np.testing.assert_allclose(log.y, linear.y)
-    assert log.form == "log"
-    assert log.y.sum() == pytest.approx(1.0)
+def test_mwd_is_mass_weighted_log10_density(oracle_run):
+    d = oracle_run.mwd(pool="dead", mass_model="repeat_units")
+    assert d.weighting == "mass"
+    assert d.coordinate == "log10"
+    assert d.representation == "density"
+    assert d.metadata["ordinate"] == "dW/dlog10(M)"
+    assert d.metadata["source"] == "mass_counts"
+    assert d.metadata["zero_filled"] is False
+    assert np.trapezoid(d.y, d.x) == pytest.approx(1.0, abs=1e-12)
 
 
-@pytest.mark.parametrize("form", ["number", "mass", "z", "log"])
-def test_mwd_exact_moments_are_invariant_to_form(oracle_run, form):
-    d = oracle_run.mwd(pool="dead", form=form, mass_model="repeat_units")
+def test_cld_log_is_not_a_separate_distribution_form(oracle_run):
+    d = oracle_run.cld(pool="dead", weighting="mass", mass_model="repeat_units")
+    assert d.metadata["coordinate"] == "DP"
+    assert d.representation == "discrete"
+    assert not hasattr(d, "log10_x")
+
+
+@pytest.mark.parametrize("weighting", ["number", "mass", "z"])
+def test_mass_distribution_exact_moments_are_invariant_to_weighting(oracle_run, weighting):
+    d = oracle_run.mass_distribution(
+        pool="dead", weighting=weighting, mass_model="repeat_units"
+    )
     assert d.mn == pytest.approx(EXPECTED_MN)
     assert d.mw == pytest.approx(EXPECTED_MW)
     assert d.mz == pytest.approx(EXPECTED_MZ)
     assert d.dispersity == pytest.approx(EXPECTED_MASS_DISPERSITY)
 
 
-@pytest.mark.parametrize("form", ["number", "mass", "z", "log"])
-def test_cld_exact_moments_are_invariant_to_form(oracle_run, form):
-    d = oracle_run.cld(pool="dead", form=form, mass_model="repeat_units")
+def test_mwd_carries_exact_source_moments(oracle_run):
+    d = oracle_run.mwd(pool="dead", mass_model="repeat_units")
+    assert d.mn == pytest.approx(EXPECTED_MN)
+    assert d.mw == pytest.approx(EXPECTED_MW)
+    assert d.mz == pytest.approx(EXPECTED_MZ)
+    assert d.dispersity == pytest.approx(EXPECTED_MASS_DISPERSITY)
+
+
+@pytest.mark.parametrize("weighting", ["number", "mass", "z"])
+def test_cld_exact_moments_are_invariant_to_weighting(oracle_run, weighting):
+    d = oracle_run.cld(pool="dead", weighting=weighting, mass_model="repeat_units")
     assert d.dpn == pytest.approx(EXPECTED_DPN)
     assert d.dpw == pytest.approx(EXPECTED_DPW)
     assert d.dpz == pytest.approx(EXPECTED_DPZ)
@@ -452,56 +466,40 @@ def _oracle_partition(oracle_run):
     return chains, left, right
 
 
+def _area(d):
+    return float(np.trapezoid(d.y, d.x))
+
+
 def test_mwd_series_per_series_keeps_each_series_normalized(oracle_run):
     _, left, right = _oracle_partition(oracle_run)
     group = oracle_run.mwd_series(
         series={"left": left, "right": right},
-        form="mass",
         normalization="per_series",
         mass_model="repeat_units",
     )
     assert group.series_names == ("left", "right")
     assert group.normalization == "per_series"
     assert group.series_disjoint is True
-    assert group["left"].y.sum() == pytest.approx(1.0)
-    assert group["right"].y.sum() == pytest.approx(1.0)
-    np.testing.assert_allclose(group["left"].mass, [100.0, 200.0])
-    np.testing.assert_allclose(group["right"].mass, [250.0, 400.0])
+    assert _area(group["left"]) == pytest.approx(1.0)
+    assert _area(group["right"]) == pytest.approx(1.0)
 
 
 def test_mwd_series_combined_preserves_exact_mass_contributions(oracle_run):
     _, left, right = _oracle_partition(oracle_run)
     group = oracle_run.mwd_series(
         series={"left": left, "right": right},
-        form="mass",
         normalization="combined",
         mass_model="repeat_units",
     )
-    assert group["left"].y.sum() == pytest.approx(800.0 / 2650.0)
-    assert group["right"].y.sum() == pytest.approx(1850.0 / 2650.0)
-    assert sum(d.y.sum() for d in group.series.values()) == pytest.approx(1.0)
+    assert _area(group["left"]) == pytest.approx(800.0 / 2650.0)
+    assert _area(group["right"]) == pytest.approx(1850.0 / 2650.0)
+    assert sum(_area(d) for d in group.series.values()) == pytest.approx(1.0)
 
 
-def test_mwd_series_combined_uses_form_specific_exact_source_total(oracle_run):
-    _, left, right = _oracle_partition(oracle_run)
-    number = oracle_run.mwd_series(
-        series={"left": left, "right": right}, form="number", normalization="combined"
-    )
-    assert number["left"].y.sum() == pytest.approx(5.0 / 10.0)
-    assert number["right"].y.sum() == pytest.approx(5.0 / 10.0)
-
-    z = oracle_run.mwd_series(
-        series={"left": left, "right": right},
-        form="z", normalization="combined", mass_model="repeat_units"
-    )
-    assert z["left"].y.sum() == pytest.approx(140000.0 / 842500.0)
-    assert z["right"].y.sum() == pytest.approx(702500.0 / 842500.0)
-
-
-def test_cld_series_combined_uses_dp_z_total_for_z_form(oracle_run):
+def test_cld_series_combined_uses_dp_z_total_for_z_weighting(oracle_run):
     _, left, right = _oracle_partition(oracle_run)
     group = oracle_run.cld_series(
-        series={"left": left, "right": right}, form="z", normalization="combined"
+        series={"left": left, "right": right}, weighting="z", normalization="combined"
     )
     assert group["left"].y.sum() == pytest.approx(14.0 / 54.0)
     assert group["right"].y.sum() == pytest.approx(40.0 / 54.0)
@@ -512,7 +510,7 @@ def test_combined_rejects_overlapping_series(oracle_run):
     with pytest.raises(ValueError, match="pairwise-disjoint"):
         oracle_run.mwd_series(
             series={"all": all_chains, "left": left},
-            form="mass", normalization="combined", mass_model="repeat_units"
+            normalization="combined", mass_model="repeat_units"
         )
 
 
@@ -520,11 +518,11 @@ def test_per_series_allows_overlapping_series(oracle_run):
     all_chains, left, _ = _oracle_partition(oracle_run)
     group = oracle_run.mwd_series(
         series={"all": all_chains, "left": left},
-        form="mass", normalization="per_series", mass_model="repeat_units"
+        normalization="per_series", mass_model="repeat_units"
     )
     assert group.series_disjoint is False
-    assert group["all"].y.sum() == pytest.approx(1.0)
-    assert group["left"].y.sum() == pytest.approx(1.0)
+    assert _area(group["all"]) == pytest.approx(1.0)
+    assert _area(group["left"]) == pytest.approx(1.0)
 
 
 def test_series_normalization_rejects_removed_modes(oracle_run):
@@ -539,11 +537,11 @@ def test_series_normalization_rejects_removed_modes(oracle_run):
 def test_combined_scaling_does_not_change_source_moments(oracle_run):
     _, left, right = _oracle_partition(oracle_run)
     per = oracle_run.mwd_series(
-        series={"left": left, "right": right}, form="mass", normalization="per_series",
+        series={"left": left, "right": right}, normalization="per_series",
         mass_model="repeat_units",
     )
     combined = oracle_run.mwd_series(
-        series={"left": left, "right": right}, form="mass", normalization="combined",
+        series={"left": left, "right": right}, normalization="combined",
         mass_model="repeat_units",
     )
     for name in ("left", "right"):

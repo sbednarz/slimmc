@@ -3,7 +3,24 @@
 This file records public, user-visible changes. Detailed implementation history
 is available from the Git history.
 
-## Slimmc 5.0.2 / pyslimmc 5.0.0
+## Slimmc 5.0.2 / pyslimmc 5.0.1
+
+- corrected the CLD/MWD mathematical contract introduced in pyslimmc 5.0.0;
+- added exact discrete `mass_distribution()` alongside `mass_counts()`;
+- changed `cld()` to an exact discrete `weighting="number"|"mass"|"z"` API;
+- redefined `mwd()` as normalized `dW/dlog10(M)` reconstructed by linear interpolation
+  of the transformed discrete source distribution;
+- added homopolymer zero-filling of missing integer-DP states before MWD reconstruction;
+- kept general/copolymer MWD reconstruction on occupied exact-mass support;
+- kept `sec()` independent of MWD reconstruction and based directly on the exact mass
+  measure;
+- removed the incorrect `form="number"|"mass"|"z"|"log"` contract and updated docs,
+  plotting helpers, signatures, and regression tests.
+
+**pyslimmc 5.0.0 is withdrawn for distribution analysis** because its logarithmic MWD/CLD
+semantics were mathematically incorrect. Slimmc 5.0.2 itself is unaffected.
+
+## Slimmc 5.0.2 / pyslimmc 5.0.0 — withdrawn pyslimmc distribution contract
 
 - redesigned chain-distribution analysis around exact `dp_counts()` and
   `mass_counts()` source projections;

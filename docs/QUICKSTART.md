@@ -151,17 +151,16 @@ run = sl.open("results/styrene")
 print(run.status)
 print(run.conv["Sty"][-1])
 
-mwd = run.final.mwd(form="log")
+mwd = run.final.mwd()
 plt.plot(mwd.x, mwd.y)
-plt.xscale("log")
-plt.xlabel("Molar mass, g/mol")
-plt.ylabel("dW/dlog10(M)")
+plt.xlabel("log$_{10}$(M / g mol$^{-1}$)")
+plt.ylabel("dW/dlog$_{10}$(M)")
 plt.tight_layout()
 plt.show()
 ```
 
 The exact `Mn`, `Mw`, `Mz` and dispersity values are calculated from the stored
-discrete chain population. A smoothed MWD is a plotting representation of that
+discrete chain population. The reconstructed MWD is a density representation of that
 population, not the source of the moments.
 
 ## See also

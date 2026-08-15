@@ -272,16 +272,18 @@ interpretation is chemically supported by the stored metadata.
 
 ## Exact source populations, counts, and distributions
 
-A stored chain population is the source of truth. pyslimmc separates four
-operations that should not be conflated:
+A stored chain population is the source of truth. pyslimmc separates operations
+that should not be conflated:
 
 ```text
 selected ChainPopulation
         |
-        +-- dp_counts()   -> exact DP -> N projection
-        +-- mass_counts() -> exact M  -> N projection
-        +-- cld()/mwd()   -> normalized discrete mathematical forms
-        +-- sec()         -> continuous apparent instrumental response
+        +-- dp_counts()          -> exact DP -> N projection
+        +-- mass_counts()        -> exact M  -> N projection
+        +-- cld()                -> normalized discrete DP distribution
+        +-- mass_distribution()  -> normalized discrete exact-mass distribution
+        +-- mwd()                -> reconstructed dW/dlog10(M) density
+        +-- sec()                -> continuous apparent instrumental response
 ```
 
 Compressed rows are always weighted by their stored multiplicity.
@@ -289,47 +291,40 @@ Compressed rows are always weighted by their stored multiplicity.
 ## Exact moments versus represented curves
 
 `DPn`, `DPw`, `DPz`, `Mn`, `Mw`, and `Mz` are source-population statistics.
-They are independent of CLD/MWD form, plotting, SEC broadening, and numerical
-sampling. If a required source aggregate was not stored and chains are not
-available, pyslimmc reports the quantity as unavailable rather than estimating
-it from a displayed curve.
+They are independent of CLD/MWD representation, plotting, SEC broadening, and
+numerical sampling. If a required source aggregate was not stored and chains
+are not available, pyslimmc reports the quantity as unavailable rather than
+estimating it from a displayed curve.
 
-## MWD and CLD forms
+## Discrete distributions and logarithmic MWD
 
-Both analyses accept:
+`cld(weighting=...)` and `mass_distribution(weighting=...)` support `number`,
+`mass`, and `z` weightings and remain exact discrete distributions. Their
+normalization is by summation.
+
+`mwd()` has one intentionally narrow meaning: the reconstructed mass-weighted
+logarithmic density
 
 ```text
-form = number | mass | z | log
+dW/dlog10(M)
 ```
 
-`number`, `mass`, and `z` specify the discrete weighting. `log` is the canonical
-mass-weighted logarithmic form: the exact mass fractions are placed on
-`log10(DP)` or `log10(M)` support.
+with unit numerical area in `log10(M)`. It is built from the exact source
+measure using the mcPolymer-style `N M^2` transformation, piecewise-linear
+interpolation in `log10(M)`, and area normalization. Homopolymer populations
+with an explicit single-valued DP-to-mass law zero-fill missing integer DP
+states before interpolation; general/copolymer populations use occupied exact
+masses without enumerating hypothetical mass states.
 
-For MWD, actual neutral chain masses are used. General MWD is therefore an
-independent projection of the selected chain population and is not obtained by
-multiplying or transforming an aggregated CLD.
-
-For mass-weighted CLD, pyslimmc sums the actual mass carried by all chains in a
-DP class. Only in a simple homopolymer with a linear DP-to-mass relation does
-this reduce to the familiar `DP * count` weighting.
-
-## Discrete logarithmic support and the Jacobian
-
-For a continuous mass density `w(M) = dW/dM`, changing variable to
-`u = log10(M)` gives
+The familiar Jacobian remains the mathematical basis for logarithmic densities:
+for a continuous mass density `w(M) = dW/dM` and `u = log10(M)`,
 
 ```text
 dW/dlog10(M) = M ln(10) w(M).
 ```
 
-That Jacobian is required for continuous densities. It is **not** applied to
-an exact discrete atom: a point carrying mass fraction `w_i` still carries
-`w_i` after its location is re-expressed as `log10(M_i)`.
-
-Therefore `mwd(form="log")` is an exact discrete measure on logarithmic
-support, not a finite continuous density. `plt.xscale("log")` only changes
-visual presentation.
+Changing only the plotted x-axis is therefore not equivalent to constructing
+`dW/dlog10(M)`.
 
 ## Multi-series normalization
 

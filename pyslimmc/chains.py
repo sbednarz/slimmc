@@ -234,33 +234,38 @@ class ChainPopulation:
         return calculate_population_moments(self, mass_model=mass_model)
 
     @analysis_operation(CLD_HELP)
-    def cld(self, *, form: str = "number", mass_model: str | None = None):
-        """Build an exact discrete CLD for this already-selected population."""
+    def cld(self, *, weighting: str = "number", mass_model: str | None = None):
+        """Build the exact discrete CLD for this already-selected population."""
         from .distributions import build_cld
-        return build_cld(self, form=form, mass_model=mass_model)
+        return build_cld(self, weighting=weighting, mass_model=mass_model)
 
     @analysis_operation(MWD_HELP)
-    def mwd(self, *, form: str = "log", mass_model: str | None = None):
-        """Build an exact discrete MWD for this already-selected population."""
-        from .distributions import build_mwd
-        return build_mwd(self, form=form, mass_model=mass_model)
+    def mass_distribution(self, *, weighting: str = "mass", mass_model: str | None = None):
+        """Build the exact discrete molar-mass distribution."""
+        from .distributions import build_mass_distribution
+        return build_mass_distribution(self, weighting=weighting, mass_model=mass_model)
 
-    def cld_series(self, *, series, form: str = "number",
+    @analysis_operation(MWD_HELP)
+    def mwd(self, *, mass_model: str | None = None):
+        """Build the reconstructed mass-weighted dW/dlog10(M) density."""
+        from .distributions import build_mwd
+        return build_mwd(self, mass_model=mass_model)
+
+    def cld_series(self, *, series, weighting: str = "number",
                    normalization: str = "per_series", mass_model: str | None = None):
         """Compare named CLDs without changing their exact supports."""
         from .distributions import build_cld_series
         return build_cld_series(
-            self, series=series, form=form, normalization=normalization,
+            self, series=series, weighting=weighting, normalization=normalization,
             mass_model=mass_model,
         )
 
-    def mwd_series(self, *, series, form: str = "log",
-                   normalization: str = "per_series", mass_model: str | None = None):
-        """Compare named MWDs without changing their exact supports."""
+
+    def mwd_series(self, *, series, normalization: str = "per_series", mass_model: str | None = None):
+        """Compare named reconstructed MWD densities."""
         from .distributions import build_mwd_series
         return build_mwd_series(
-            self, series=series, form=form, normalization=normalization,
-            mass_model=mass_model,
+            self, series=series, normalization=normalization, mass_model=mass_model,
         )
 
     @analysis_operation(SEC_HELP)
