@@ -212,6 +212,18 @@ for optimization workflows.
 Exact release, installation, and build details are in
 [Releases](docs/development/RELEASES.md).
 
+### Try online
+
+No local installation is required to try slimmc.
+
+Click one of the buttons below to open and run a complete `slimmc` + `pyslimmc` example directly in your browser.
+
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sbednarz/slimmc-notebooks/blob/main/colab/slimmc_colab_basic_frp.ipynb)
+
+[![Launch Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sbednarz/slimmc-notebooks/main?filepath=binder/slimmc_binder_basic_frp.ipynb)
+
+[More informations](https://github.com/sbednarz/slimmc-notebooks/tree/main)
+
 ## Citation and license
 
 Citation metadata are provided in `CITATION.cff`. When reporting or citing a
