@@ -296,6 +296,14 @@ type
     channelTraceTruncated*: bool     # item 67: trace_channels_truncated (limit reached, sim continued)
     n*: seq[int64]
     pools*: seq[seq[Chain]]
+    # Dead chains are immutable and never sampled, so a dead pool only needs
+    # a histogram of chain structures. `pools[pid]` of a dead pool is a small
+    # append buffer; when it reaches DeadBufferFoldLen it is folded into
+    # `deadGroups[pid]` (StructKey -> count). Memory is then O(distinct
+    # structures), not O(dead chains). Readers must see buffer + groups; use
+    # poolChainCount / deadGroupsOf. Indexed by pool id; empty for active pools.
+    deadGroups*: seq[Table[StructKey, int64]]
+    deadGroupedChains*: seq[int64]
     # Incremental eligibility counters keep SSA propensities O(1) in the
     # number of stored chains. They are runtime-only and are not persisted.
     poolPropagatableCounts*: seq[int64]
@@ -527,6 +535,51 @@ proc deadPoolIds*(m: Model): seq[int] =
 proc hash*(x: StructKey): Hash =
   result = x.eg1.hash !& x.dp.hash !& x.eg2.hash !& x.formedBy.hash
   result = !$result
+
+const DeadBufferFoldLen* = 65536
+  ## Dead-pool append-buffer length that triggers folding into deadGroups
+  ## (~2 MB of Chain records per dead pool).
+
+proc structKey*(c: Chain): StructKey {.inline.} =
+  StructKey(eg1: c.eg1, dp: c.dp, eg2: c.eg2, formedBy: c.formedBy)
+
+proc ensureDeadGroups(s: var State) =
+  if s.deadGroups.len < s.pools.len:
+    s.deadGroups.setLen(s.pools.len)
+  if s.deadGroupedChains.len < s.pools.len:
+    s.deadGroupedChains.setLen(s.pools.len)
+
+proc foldDeadBuffer*(s: var State; poolId: int) =
+  ## Move the dead-pool append buffer into the structure histogram and
+  ## release the buffer storage. Lossless: a dead chain is fully described
+  ## by its StructKey.
+  s.ensureDeadGroups()
+  for c in s.pools[poolId]:
+    s.deadGroups[poolId].mgetOrPut(c.structKey, 0'i64) += 1'i64
+  s.deadGroupedChains[poolId] += int64(s.pools[poolId].len)
+  s.pools[poolId] = @[]
+
+proc addDeadChain*(s: var State; poolId: int; c: Chain) =
+  s.pools[poolId].add c
+  if s.pools[poolId].len >= DeadBufferFoldLen:
+    s.foldDeadBuffer(poolId)
+
+proc groupedChainCount*(s: State; poolId: int): int64 {.inline.} =
+  if poolId < s.deadGroupedChains.len: s.deadGroupedChains[poolId] else: 0'i64
+
+proc poolChainCount*(s: State; poolId: int): int64 {.inline.} =
+  ## Number of chains in a pool: stored records plus folded dead chains.
+  int64(s.pools[poolId].len) + s.groupedChainCount(poolId)
+
+proc deadGroupCount*(s: State; poolId: int): int {.inline.} =
+  ## Number of distinct folded dead-chain structures in a pool.
+  if poolId < s.deadGroups.len: s.deadGroups[poolId].len else: 0
+
+iterator deadGroupsOf*(s: State; poolId: int): tuple[key: StructKey, count: int64] =
+  ## Folded dead-chain structures of one pool (the unfolded rest is s.pools[poolId]).
+  if poolId < s.deadGroups.len:
+    for key, count in s.deadGroups[poolId]:
+      yield (key, count)
 
 proc formationKindName*(kind: FormationKind): string =
   ## Stable text written to the formed_by column in chains.csv.
@@ -808,6 +861,8 @@ proc calcMTotal*(m: Model; s: State): int64 =
   else:
     result = 0
 
-  for pool in s.pools:
+  for pid, pool in s.pools:
     for ch in pool:
       result += int64(ch.dp)
+    for key, count in s.deadGroupsOf(pid):
+      result += int64(key.dp) * count

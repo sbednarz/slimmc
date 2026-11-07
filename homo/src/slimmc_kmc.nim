@@ -27,6 +27,8 @@ proc initState*(m: Model): State =
   result.speciesExternalN = newSeq[int64](m.species.len)
   result.speciesDosedN = newSeq[int64](m.species.len)
   result.pools = newSeq[seq[Chain]](m.pools.len)
+  result.deadGroups = newSeq[Table[StructKey, int64]](m.pools.len)
+  result.deadGroupedChains = newSeq[int64](m.pools.len)
   result.poolPropagatableCounts = newSeq[int64](m.pools.len)
   result.poolDepropableCounts = newSeq[int64](m.pools.len)
   result.poolEligibilityTrackedLen = newSeq[int64](m.pools.len)
@@ -181,6 +183,11 @@ proc takeAt(pool: var seq[Chain]; idx: int): Chain =
   pool.setLen(pool.len - 1)
 
 proc trackAdd(s: var State; m: Model; poolId: int; c: Chain) =
+  if m.pools[poolId].kind == pkDead:
+    # Dead pools are never reactants: no eligibility counters, and records
+    # are folded into a structure histogram to bound memory.
+    s.addDeadChain(poolId, c)
+    return
   s.ensureEligibilityCounters(m, poolId)
   s.pools[poolId].add c
   if int64(c.dp) < m.dpMax: inc s.poolPropagatableCounts[poolId]

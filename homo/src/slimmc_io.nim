@@ -161,16 +161,19 @@ proc estimateMemory*(m: Model; s: State): MemoryEstimate =
   ## slimmc's storage model: every chain (live or dead) is stored as the
   ## same compact, fixed-size `Chain` record (eg1, dp, eg2, formedBy) inside
   ## `s.pools`, so unlike copo there is no separate per-mer sequence to
-  ## count -- one conservative per-chain byte estimate covers everything.
+  ## count. Dead pools hold a bounded append buffer of Chain records plus a
+  ## StructKey -> count histogram, so their cost scales with the number of
+  ## distinct dead-chain structures, not with the number of dead chains.
   const bytesPerChain = 32'i64  # 2x int + int64 + enum tag, generously rounded
+  const bytesPerGroup = 96'i64  # hash + StructKey + count, with table slack
   for pid, pdef in m.pools:
-    let n = int64(s.pools[pid].len)
     if pdef.kind == pkActive:
-      result.liveChains += n
+      result.liveChains += int64(s.pools[pid].len)
     else:
-      result.deadChains += n
+      result.deadChains += s.poolChainCount(pid)
+      result.deadRecordBytes += int64(s.pools[pid].len) * bytesPerChain
+      result.deadRecordBytes += int64(s.deadGroupCount(pid)) * bytesPerGroup
   result.liveObjectBytes = result.liveChains * bytesPerChain
-  result.deadRecordBytes = result.deadChains * bytesPerChain
   result.totalBytes = result.liveObjectBytes + result.deadRecordBytes
 
 proc fmtBytes*(b: int64): string =
@@ -201,6 +204,20 @@ proc debugCheckState*(m: Model; s: State; context: string) =
         issues.add "active pool " & pdef.name & " contains non-ACTIVE chain"
       if pdef.kind == pkDead and ch.eg2 == m.egActive:
         issues.add "dead pool " & pdef.name & " contains ACTIVE chain"
+    if pdef.kind == pkDead:
+      # Folded dead chains; dead pools carry no eligibility counters.
+      var grouped = 0'i64
+      for key, count in s.deadGroupsOf(pid):
+        if key.dp < 1:
+          issues.add "DP < 1 in pool " & pdef.name
+        if key.eg2 == m.egActive:
+          issues.add "dead pool " & pdef.name & " contains ACTIVE chain"
+        if count < 1:
+          issues.add "non-positive grouped count in pool " & pdef.name
+        grouped += count
+      if grouped != s.groupedChainCount(pid):
+        issues.add "grouped dead-chain total mismatch in pool " & pdef.name
+      continue
     if pid >= s.poolPropagatableCounts.len or s.poolPropagatableCounts[pid] != propagatable:
       issues.add "propagatable counter mismatch in pool " & pdef.name &
         " stored=" & (if pid < s.poolPropagatableCounts.len: $s.poolPropagatableCounts[pid] else: "missing") &

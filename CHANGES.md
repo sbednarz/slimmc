@@ -3,6 +3,16 @@
 This file records public, user-visible changes. Detailed implementation history
 is available from the Git history.
 
+## Unreleased
+
+- homo: dead pools are stored as a structure histogram (left end, DP, right
+  end, formation channel → count) behind a bounded append buffer. Dead-chain
+  memory no longer grows with the number of dead chains; on a bulk
+  low-kp/high-transfer benchmark with 3.6·10⁷ dead chains, peak RSS fell from
+  about 5.0 GB to about 14 MB and wall time by about 20%, with bit-identical
+  Storage output. The homo memory
+  estimate (`at_memory`, `print_memory`) now reflects the histogram size.
+
 ## Slimmc 5.0.2 / pyslimmc 5.0.1
 
 - corrected the CLD/MWD mathematical contract introduced in pyslimmc 5.0.0;

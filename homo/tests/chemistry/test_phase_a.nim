@@ -260,3 +260,43 @@ suite "homo chemistry phase A detailed":
       var rng = initRand(600 + i)
       applyChannel(m, s, 0, rng)
       assertCoreInvariants(m, s, total0)
+
+  test "H06 dead-pool folding into the structure histogram is lossless":
+    var m = phaseAModel()
+    m.channels = @[KmcChannel(name: "term_d", kind: chMacroTermD, kId: 0, pool1: 0, pool2: 0, poolOut: 2)]
+    # Enough terminations to fold the dead buffer at least twice.
+    let nLive = 2 * DeadBufferFoldLen + 100
+    var live: seq[Chain] = @[]
+    var expectedDp = initCountTable[int]()
+    for i in 0 ..< nLive:
+      let dp = 1 + (i mod 50)
+      live.add liveChain(m, dp)
+      expectedDp.inc(dp)
+    var s = stateFor(m, 0, live)
+    let total0 = calcMTotal(m, s)
+    var rng = initRand(700)
+    for _ in 0 ..< nLive div 2:
+      applyChannel(m, s, 0, rng)
+    check s.pools[0].len == 0
+    check s.poolChainCount(2) == int64(nLive)
+    check s.groupedChainCount(2) > 0
+    check s.pools[2].len < DeadBufferFoldLen
+    check s.deadGroupCount(2) <= 2 * 50  # DP x {H, U}
+    check calcMTotal(m, s) == total0
+    var gotDp = initCountTable[int]()
+    var hCount, uCount = 0'i64
+    for ch in s.pools[2]:
+      gotDp.inc(ch.dp)
+      if ch.eg2 == m.egH: inc hCount else: inc uCount
+    for key, count in s.deadGroupsOf(2):
+      check key.eg2 != m.egActive
+      gotDp.inc(key.dp, int(count))
+      if key.eg2 == m.egH: hCount += count else: uCount += count
+    check gotDp == expectedDp
+    check hCount == uCount
+    # Folding an already folded pool is a no-op for totals.
+    let before = s.poolChainCount(2)
+    s.foldDeadBuffer(2)
+    check s.pools[2].len == 0
+    check s.poolChainCount(2) == before
+    check calcMTotal(m, s) == total0

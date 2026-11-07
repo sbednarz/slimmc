@@ -334,6 +334,13 @@ a normal state-only `save`. `stop` terminates the run after the threshold is
 reached. With `save` but without `stop`, the threshold snapshot is written only
 once and the simulation continues.
 
+Dead chains never react again, so the homo engine stores each dead pool as a
+histogram of chain structures (left end, DP, right end, formation channel →
+count), with a small append buffer in front of it. Dead-chain memory therefore
+scales with the number of distinct structures, not with the number of dead
+chains, and the memory estimate used by `at_memory` and `print_memory` follows
+the same rule. Results are identical to storing every dead chain individually.
+
 ## SSA/kMC theory
 
 For state `x`, every channel `j` has propensity `a_j(x)`. With

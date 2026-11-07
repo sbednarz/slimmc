@@ -387,6 +387,12 @@ proc captureChainsV1(m: Model; s: var State; sid: uint64) =
       let key: ChainV1Key = (populationId, uint32(pid + 1), uint32(ord(ch.formedBy)),
         uint64(ch.dp), uint32(ch.eg1 + 2), uint32(ch.eg2 + 2))
       grouped[key] = grouped.getOrDefault(key, 0'u64) + 1'u64
+    # Dead chains already folded into the structure histogram.
+    for sk, count in s.deadGroupsOf(pid):
+      doAssert sk.dp >= 1 and count >= 1
+      let key: ChainV1Key = (populationId, uint32(pid + 1), uint32(ord(sk.formedBy)),
+        uint64(sk.dp), uint32(sk.eg1 + 2), uint32(sk.eg2 + 2))
+      grouped[key] = grouped.getOrDefault(key, 0'u64) + uint64(count)
   var keys: seq[ChainV1Key] = @[]
   for key in grouped.keys: keys.add key
   keys.sort(proc(a, b: ChainV1Key): int =
@@ -506,11 +512,11 @@ proc captureStorageV1Snapshot*(m: Model; s: var State; reason: string;
   s.storageV1KmcVolumeL.add m.V
   var liveCount = 0'u64
   var deadCount = 0'u64
-  for pid, chains in s.pools:
+  for pid in 0 ..< s.pools.len:
     if m.pools[pid].kind == pkActive:
-      liveCount += uint64(chains.len)
+      liveCount += uint64(s.poolChainCount(pid))
     else:
-      deadCount += uint64(chains.len)
+      deadCount += uint64(s.poolChainCount(pid))
   s.storageV1ChainCountLive.add liveCount
   s.storageV1ChainCountDead.add deadCount
   s.storageV1ChainCountTotal.add liveCount + deadCount
@@ -551,10 +557,11 @@ proc captureStorageV1Snapshot*(m: Model; s: var State; reason: string;
   for count in s.n: addState(uint64(count))
   var live = 0'u64
   var dead = 0'u64
-  for pid, pool in s.pools:
-    addState(uint64(pool.len))
-    if m.pools[pid].kind == pkActive: live += uint64(pool.len)
-    else: dead += uint64(pool.len)
+  for pid in 0 ..< s.pools.len:
+    let poolCount = uint64(s.poolChainCount(pid))
+    addState(poolCount)
+    if m.pools[pid].kind == pkActive: live += poolCount
+    else: dead += poolCount
   addState(live)
   addState(dead)
   if hasChains:
