@@ -1,7 +1,7 @@
 import std/[os, strutils, json, math]
 
 const AppName = "slimmc-summary"
-const AppVersion {.strdefine.} = "5.0.3"
+const AppVersion {.strdefine.} = "5.0.4"
 
 type NpyData = object
   descr: string

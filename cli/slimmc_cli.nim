@@ -47,7 +47,7 @@ import ../common/build_provenance
 
 const AppName = "slimmc"
 const
-  CliVersion {.strdefine.} = "5.0.3"
+  CliVersion {.strdefine.} = "5.0.4"
 
 proc fail(msg: string) =
   stderr.writeLine("ERROR: " & msg)

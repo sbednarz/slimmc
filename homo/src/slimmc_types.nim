@@ -7,7 +7,7 @@ import ../../common/safe_numeric
 
 const
   AppName* = "slimmc"
-  SlimmcVersion* {.strdefine.} = "5.0.3"
+  SlimmcVersion* {.strdefine.} = "5.0.4"
   AppVersion* = SlimmcVersion
 
   NA* = 6.02214076e23

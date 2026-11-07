@@ -3,7 +3,7 @@
 This file records public, user-visible changes. Detailed implementation history
 is available from the Git history.
 
-## Unreleased
+## Slimmc 5.0.4
 
 - homo: dead pools are stored as a structure histogram (left end, DP, right
   end, formation channel → count) behind a bounded append buffer. Dead-chain
